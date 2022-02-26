@@ -6,6 +6,7 @@
 *.lo
 *.o
 *.obj
+obj
 
 # Precompiled Headers
 *.gch
@@ -29,3 +30,9 @@
 # Executables
 *.out
 *.app
+bin
+
+# Visual Studio files
+*.sln
+*.vcxproj*
+.vs
