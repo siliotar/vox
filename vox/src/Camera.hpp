@@ -35,4 +35,6 @@ public:
 	static void			moveRight(float value);
 	static void			moveUp(float value);
 	static void			resetRotation();
+
+	static inline const glm::vec3&	getPlayerPosition() { return _camera->_position; }
 };

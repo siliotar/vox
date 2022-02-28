@@ -40,7 +40,7 @@ void	Window::init(int w, int h, const std::string& title)
 
 	glfwMakeContextCurrent(window);
 
-	glfwSwapInterval(1);
+	glfwSwapInterval(0);
 
 #ifndef _WIN32
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -56,6 +56,7 @@ void	Window::init(int w, int h, const std::string& title)
 	}
 	glEnable(GL_DEPTH_TEST);
 	hideCursor();
+	glEnable(GL_CULL_FACE);
 }
 
 bool	Window::shouldClose()

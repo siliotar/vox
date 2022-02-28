@@ -11,12 +11,13 @@
 #include "Shader.hpp"
 #include "Window.hpp"
 #include "Camera.hpp"
+#include "Chunk.hpp"
+#include "Map.hpp"
 
 struct Vertex
 {
 	glm::vec3	position;
 	glm::vec2	texCoords;
-	float		texIndex;
 };
 
 class Renderer
@@ -30,7 +31,6 @@ private:
 	Vertex* _rectVertexBuffer = nullptr;
 	Vertex* _rectVertexBufferPtr = nullptr;
 	GLuint* _rectIndexBuffer = nullptr;
-	GLuint* _rectIndexBufferPtr = nullptr;
 	Shader	_shader;
 	Texture	_textureAtlas;
 	uint	_vertexCount;
@@ -61,4 +61,6 @@ public:
 	static void drawTriangle();
 	static void drawRectangle(const glm::vec3& leftDownPos, const glm::vec3& rightDownPos, \
 							const glm::vec3& rightUpPos, const glm::vec3& leftUpPos, uint textureID);
+	static void drawChunk(const Chunk& chunk, const Chunk* left, const Chunk* right, const Chunk* back, const Chunk* front);
+	static void drawMap(const Map& map);
 };

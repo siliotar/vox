@@ -3,6 +3,9 @@
 #include "Events.hpp"
 #include "Camera.hpp"
 
+#include "Chunk.hpp"
+#include "Map.hpp"
+
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
@@ -22,9 +25,17 @@ int main(void)
 	float	camX = 0.0f;
 	float	camY = 0.0f;
 
+	Map	map(2);
+	map.map[0].blocks[5 + 5 * 16 + 5 * 256].ID = 0;
+	map.map[0].blocks[5 + 5 * 16 + 5 * 256].Texture = 0;
+
+	size_t frames = 0;
+	float startTime = glfwGetTime();
+
 	/* Loop until the user closes the window */
 	while (!Window::shouldClose())
 	{
+		++frames;
 		float	currentTime = glfwGetTime();
 		deltaTime = currentTime - lastTime;
 		lastTime = currentTime;
@@ -46,6 +57,11 @@ int main(void)
 		if (Events::pressed(GLFW_KEY_LEFT_SHIFT) || Events::repeat(GLFW_KEY_LEFT_SHIFT) || \
 			Events::pressed(GLFW_KEY_RIGHT_SHIFT) || Events::repeat(GLFW_KEY_RIGHT_SHIFT))
 			move.z -= 1.0f;
+		if (Events::pressed(GLFW_KEY_LEFT_CONTROL) || Events::repeat(GLFW_KEY_LEFT_CONTROL) || \
+			Events::pressed(GLFW_KEY_RIGHT_CONTROL) || Events::repeat(GLFW_KEY_RIGHT_CONTROL))
+			movementSpeed = 8.0f;
+		else
+			movementSpeed = 5.0f;
 		if (move.x != 0.0f || move.y != 0.0f || move.z != 0.0f)
 		{
 			move = glm::normalize(move);
@@ -68,14 +84,11 @@ int main(void)
 			Camera::rotate(camY, camX, 0.0f);
 		}
 
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 		Renderer::beginBatch();
 
-		Renderer::drawRectangle({ -0.5f, -0.5f,  0.5f }, {  0.5f, -0.5f,  0.5f }, {  0.5f,  0.5f,  0.5f }, { -0.5f,  0.5f,  0.5f }, 0); // Front
-		Renderer::drawRectangle({  0.5f, -0.5f,  0.5f }, {  0.5f, -0.5f, -0.5f }, {  0.5f,  0.5f, -0.5f }, {  0.5f,  0.5f,  0.5f }, 0); // Right
-		Renderer::drawRectangle({  0.5f, -0.5f, -0.5f }, { -0.5f, -0.5f, -0.5f }, { -0.5f,  0.5f, -0.5f }, {  0.5f,  0.5f, -0.5f }, 0); // Back
-		Renderer::drawRectangle({ -0.5f, -0.5f, -0.5f }, { -0.5f, -0.5f,  0.5f }, { -0.5f,  0.5f,  0.5f }, { -0.5f,  0.5f, -0.5f }, 0); // Left
-		Renderer::drawRectangle({ -0.5f, -0.5f, -0.5f }, {  0.5f, -0.5f, -0.5f }, {  0.5f, -0.5f,  0.5f }, { -0.5f, -0.5f,  0.5f }, 0); // Down
-		Renderer::drawRectangle({ -0.5f,  0.5f,  0.5f }, {  0.5f,  0.5f,  0.5f }, {  0.5f,  0.5f, -0.5f }, { -0.5f,  0.5f, -0.5f }, 1); // Up
+		Renderer::drawMap(map);
 
 		Renderer::endBatch();
 		Renderer::flush();
@@ -85,6 +98,8 @@ int main(void)
 
 		Window::swapBuffers();
 	}
+
+	std::cout << (double)frames / (glfwGetTime() - startTime) << std::endl;
 
 	Renderer::shutdown();
 	Camera::shutdown();
