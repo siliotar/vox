@@ -18,25 +18,33 @@ int main(void)
 
 	Camera::rotate(glm::radians(89.0f), 0.0f, 0.0f);
 
-	float	deltaTime = 0.0f;
-	float	lastTime = glfwGetTime();
+	double	deltaTime = 0.0f;
+	double	lastTime = glfwGetTime();
 	float	movementSpeed = 5.0f;
 
 	float	camX = 0.0f;
 	float	camY = 0.0f;
 
-	Map	map(2);
-	map.map[0].blocks[5 + 5 * 16 + 5 * 256].ID = 0;
-	map.map[0].blocks[5 + 5 * 16 + 5 * 256].Texture = 0;
+	Map	map;
+	map.getChunk(0, 0)->blocks[0 + 0 * 16 + 5 * 256].ID = 0;
+	map.getChunk(0, 0)->blocks[0 + 0 * 16 + 5 * 256].Texture = 0;
+	map.getChunk(0, 0)->blocks[1 + 1 * 16 + 5 * 256].ID = 0;
+	map.getChunk(0, 0)->blocks[1 + 1 * 16 + 5 * 256].Texture = 0;
+	map.getChunk(0, 0)->blocks[2 + 2 * 16 + 5 * 256].ID = 0;
+	map.getChunk(0, 0)->blocks[2 + 2 * 16 + 5 * 256].Texture = 0;
+	map.getChunk(0, 0)->blocks[3 + 3 * 16 + 5 * 256].ID = 0;
+	map.getChunk(0, 0)->blocks[3 + 3 * 16 + 5 * 256].Texture = 0;
+	map.getChunk(0, 0)->blocks[4 + 4 * 16 + 5 * 256].ID = 0;
+	map.getChunk(0, 0)->blocks[4 + 4 * 16 + 5 * 256].Texture = 0;
 
 	size_t frames = 0;
-	float startTime = glfwGetTime();
+	double startTime = glfwGetTime();
 
 	/* Loop until the user closes the window */
 	while (!Window::shouldClose())
 	{
 		++frames;
-		float	currentTime = glfwGetTime();
+		double	currentTime = glfwGetTime();
 		deltaTime = currentTime - lastTime;
 		lastTime = currentTime;
 

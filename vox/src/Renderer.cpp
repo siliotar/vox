@@ -1,14 +1,15 @@
 #include "Renderer.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "Window.hpp"
+#include "Camera.hpp"
 
 Renderer* Renderer::_renderer = nullptr;
-const float Renderer::TextureSize = 32.0f / 512.0f;
 
 Renderer::Renderer()
 	: _va(), _vb(nullptr, MaxVertexCount * sizeof(Vertex), GL_DYNAMIC_DRAW), _vbLayout(),
 	_ib(nullptr, MaxIndexCount * sizeof(GLuint), GL_DYNAMIC_DRAW),
 	_shader("res/shaders/Basic.vert", "res/shaders/Basic.frag"),
-	_textureAtlas("res/textures/atlas.png"), _model(1.0f),
-	_vertexCount(0), _indexCount(0)
+	_textureAtlas("res/textures/atlas.png"), _model(1.0f), _indexCount(0)
 {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -85,130 +86,41 @@ void	Renderer::flush()
 
 	glDrawElements(GL_TRIANGLES, _renderer->_indexCount, GL_UNSIGNED_INT, nullptr);
 
-	_renderer->_vertexCount = 0;
 	_renderer->_indexCount = 0;
 }
 
-void Renderer::drawTriangle()
+void	Renderer::drawMap(Map& map)
 {
-	if (_renderer->_indexCount >= MaxIndexCount)
+	//int	playerChunkX = static_cast<int>(Camera::getPlayerPosition().x) / CHUNK_X;
+	//int	playerChunkZ = static_cast<int>(Camera::getPlayerPosition().z) / CHUNK_Z;
+	int	playerChunkX = 0;
+	int	playerChunkZ = 0;
+	for (int z = playerChunkZ - RenderDistance; z <= playerChunkZ + RenderDistance; ++z)
 	{
-		endBatch();
-		flush();
-		beginBatch();
-	}
-}
-
-void Renderer::drawRectangle(const glm::vec3& leftDownPos, const glm::vec3& rightDownPos, \
-							const glm::vec3& rightUpPos, const glm::vec3& leftUpPos, uint textureID)
-{
-	if (_renderer->_indexCount >= MaxIndexCount)
-	{
-		endBatch();
-		flush();
-		beginBatch();
-	}
-
-	float	textureLeft = (float)(textureID % TextureAtlasX) * TextureSize;
-	float	textureDown = (float)(TextureAtlasY - 1 - textureID / TextureAtlasY) * TextureSize;
-
-
-	_renderer->_rectVertexBufferPtr->position = leftDownPos;
-	_renderer->_rectVertexBufferPtr->texCoords = { textureLeft, textureDown };
-	++(_renderer->_rectVertexBufferPtr);
-
-	_renderer->_rectVertexBufferPtr->position = rightDownPos;
-	_renderer->_rectVertexBufferPtr->texCoords = { textureLeft + TextureSize, textureDown };
-	++(_renderer->_rectVertexBufferPtr);
-
-	_renderer->_rectVertexBufferPtr->position = rightUpPos;
-	_renderer->_rectVertexBufferPtr->texCoords = { textureLeft + TextureSize, textureDown + TextureSize };
-	++(_renderer->_rectVertexBufferPtr);
-
-	_renderer->_rectVertexBufferPtr->position = leftUpPos;
-	_renderer->_rectVertexBufferPtr->texCoords = { textureLeft, textureDown + TextureSize };
-	++(_renderer->_rectVertexBufferPtr);
-
-	_renderer->_vertexCount += 4;
-	_renderer->_indexCount += 6;
-}
-
-void	Renderer::drawChunk(const Chunk& chunk, const Chunk* left, const Chunk* right, const Chunk* back, const Chunk* front)
-{
-	for (size_t y = 0; y < CHUNK_Y; ++y)
-	{
-		for (size_t z = 0; z < CHUNK_Z; z++)
+		for (int x = playerChunkX - RenderDistance; x <= playerChunkX + RenderDistance; ++x)
 		{
-			for (size_t x = 0; x < CHUNK_X; x++)
+			const Chunk*	left = map.getChunk(x + 1, z);
+			const Chunk*	right = map.getChunk(x - 1, z);
+			const Chunk*	back = map.getChunk(x, z + 1);
+			const Chunk*	front = map.getChunk(x, z - 1);
+			map.getChunk(x, z)->calculateMesh(left, right, back, front);
+			std::vector<Vertex>& mesh = map.getChunk(x, z)->mesh;
+			size_t size = mesh.size();
+			Vertex* data = mesh.data();
+			for (size_t k = 0; k < size; k += 4)
 			{
-				int	posX = x + chunk.x;
-				int	posY = y;
-				int	posZ = z + chunk.z;
-				if (chunk.blocks[x + z * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0)
-					continue;
-				if (y == 0 || chunk.blocks[x + z * CHUNK_X + (y - 1) * CHUNK_Z * CHUNK_X].ID == 0)
-					drawRectangle(
-						{ posX - 0.5f, posY - 0.5f, posZ - 0.5f },
-						{ posX + 0.5f, posY - 0.5f, posZ - 0.5f },
-						{ posX + 0.5f, posY - 0.5f, posZ + 0.5f },
-						{ posX - 0.5f, posY - 0.5f, posZ + 0.5f },
-						chunk.blocks[x + z * CHUNK_X + y * CHUNK_Z * CHUNK_X].Texture);
-				if (y == (CHUNK_Y - 1) || chunk.blocks[x + z * CHUNK_X + (y + 1) * CHUNK_Z * CHUNK_X].ID == 0)
-					drawRectangle(
-						{ posX - 0.5f, posY + 0.5f, posZ + 0.5f },
-						{ posX + 0.5f, posY + 0.5f, posZ + 0.5f },
-						{ posX + 0.5f, posY + 0.5f, posZ - 0.5f },
-						{ posX - 0.5f, posY + 0.5f, posZ - 0.5f },
-						chunk.blocks[x + z * CHUNK_X + y * CHUNK_Z * CHUNK_X].Texture);
-				if ((z == 0 && (!front || front->blocks[x + (CHUNK_Z - 1) * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0)) \
-					|| (z != 0 && chunk.blocks[x + (z - 1) * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0))
-					drawRectangle(
-						{ posX + 0.5f, posY - 0.5f, posZ - 0.5f },
-						{ posX - 0.5f, posY - 0.5f, posZ - 0.5f },
-						{ posX - 0.5f, posY + 0.5f, posZ - 0.5f },
-						{ posX + 0.5f, posY + 0.5f, posZ - 0.5f },
-						chunk.blocks[x + z * CHUNK_X + y * CHUNK_Z * CHUNK_X].Texture);
-				if ((z == (CHUNK_Z - 1) && (!back || back->blocks[x + (0) * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0)) \
-					|| (z != (CHUNK_Z - 1) && chunk.blocks[x + (z + 1) * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0))
-					drawRectangle(
-						{ posX - 0.5f, posY - 0.5f, posZ + 0.5f },
-						{ posX + 0.5f, posY - 0.5f, posZ + 0.5f },
-						{ posX + 0.5f, posY + 0.5f, posZ + 0.5f },
-						{ posX - 0.5f, posY + 0.5f, posZ + 0.5f },
-						chunk.blocks[x + z * CHUNK_X + y * CHUNK_Z * CHUNK_X].Texture);
-				if ((x == 0 && (!left || left->blocks[(CHUNK_X - 1) + z * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0)) \
-					|| (x != 0 && chunk.blocks[(x - 1) + z * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0))
-					drawRectangle(
-						{ posX - 0.5f, posY - 0.5f, posZ - 0.5f },
-						{ posX - 0.5f, posY - 0.5f, posZ + 0.5f },
-						{ posX - 0.5f, posY + 0.5f, posZ + 0.5f },
-						{ posX - 0.5f, posY + 0.5f, posZ - 0.5f },
-						chunk.blocks[x + z * CHUNK_X + y * CHUNK_Z * CHUNK_X].Texture);
-				if ((x == (CHUNK_X - 1) && (!right || right->blocks[(0) + z * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0)) \
-					|| (x != (CHUNK_X - 1) && chunk.blocks[(x + 1) + z * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0))
-					drawRectangle(
-						{ posX + 0.5f, posY - 0.5f, posZ + 0.5f },
-						{ posX + 0.5f, posY - 0.5f, posZ - 0.5f },
-						{ posX + 0.5f, posY + 0.5f, posZ - 0.5f },
-						{ posX + 0.5f, posY + 0.5f, posZ + 0.5f },
-						chunk.blocks[x + z * CHUNK_X + y * CHUNK_Z * CHUNK_X].Texture);
-			}
-		}
-	}
-}
+				if (_renderer->_indexCount >= MaxIndexCount)
+				{
+					endBatch();
+					flush();
+					beginBatch();
+				}
 
-void	Renderer::drawMap(const Map& map)
-{
-	size_t size = map.radius * 2 + 1;
-	for (size_t i = 0; i < size; ++i)
-	{
-		for (size_t j = 0; j < size; ++j)
-		{
-			const Chunk*	left = j == size - 1 ? 0 : &(map.map[j + 1 + i * size]);
-			const Chunk*	right = j == 0 ? 0 : &(map.map[j - 1 + i * size]);
-			const Chunk*	back = i == 0 ? 0 : &(map.map[j + (i - 1) * size]);
-			const Chunk*	front = i == size - 1 ? 0 : &(map.map[j + (i + 1) * size]);
-			drawChunk(map.map[j + i * size], left, right, back, front);
+				memcpy(_renderer->_rectVertexBufferPtr, &data[k], 4 * sizeof(Vertex));
+
+				_renderer->_rectVertexBufferPtr += 4;
+				_renderer->_indexCount += 6;
+			}
 		}
 	}
 }

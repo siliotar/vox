@@ -1,13 +1,7 @@
 #pragma once
 
 #include <string>
-#include <fstream>
-#include <sstream>
 #include <unordered_map>
-#include <iostream>
-
-#include "OpenGL.hpp"
-
 #include "glm/glm.hpp"
 
 typedef unsigned int uint;

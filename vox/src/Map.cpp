@@ -1,24 +1,28 @@
 #include "Map.hpp"
 #include "Camera.hpp"
 
-Map::Map(uint distance)
-	: radius(distance)
+Map::Map()
 {
-	size_t size = radius * 2 + 1;
-	void* rawMemory = operator new[](size * size * sizeof(Chunk));
-	map = static_cast<Chunk*>(rawMemory);
 	int	playerChunkX = static_cast<int>(Camera::getPlayerPosition().x) / CHUNK_X;
 	int	playerChunkZ = static_cast<int>(Camera::getPlayerPosition().z) / CHUNK_Z;
-	for (size_t i = 0; i < size; ++i)
-	{
-		for (size_t j = 0; j < size; ++j)
-		{
-			int	x = (playerChunkX - j + size / 2) * CHUNK_X;
-			int z = (playerChunkZ - i + size / 2) * CHUNK_Z;
-			new(&(map[j + i * size])) Chunk(x, z);
-		}
-	}
+	for (int z = playerChunkZ - RenderDistance; z <= playerChunkZ + RenderDistance; ++z)
+		for (int x = playerChunkX - RenderDistance; x <= playerChunkX + RenderDistance; ++x)
+			_map.try_emplace(x + z * CHUNK_X, x * CHUNK_X, z * CHUNK_Z);
 }
 
 Map::~Map()
 {}
+
+Chunk* Map::getChunk(int x, int z)
+{
+	if (_map.find(x + z * CHUNK_X) != _map.end())
+		return &_map.at(x + z * CHUNK_X);
+	return nullptr;
+}
+
+const Chunk* Map::getChunk(int x, int z) const
+{
+	if (_map.find(x + z * CHUNK_X) != _map.end())
+		return &_map.at(x + z * CHUNK_X);
+	return nullptr;
+}

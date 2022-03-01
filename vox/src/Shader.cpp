@@ -1,4 +1,8 @@
 #include "Shader.hpp"
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include "OpenGL.hpp"
 
 static void readFile(const std::string& filePath, std::stringstream& stream)
 {
