@@ -2,14 +2,25 @@
 
 #include "glm/glm.hpp"
 
+/*  11     111111111     11     11111  111111111  11111 */
+/* light     texID    texCoord   posZ     posY    posX  */
+
 struct Vertex
 {
-	glm::vec3	position;
-	glm::vec2	texCoords;
-	Vertex()
-		: position(0.0f), texCoords(0.0f)
-	{}
-	Vertex(float xPos, float yPos, float zPos, float xTex, float yTex)
-		: position(xPos, yPos, zPos), texCoords(xTex, yTex)
-	{}
+	uint32_t data;
+
+	Vertex() : data(0) {}
+
+	Vertex(uint32_t data) : data(data) {}
+
+	Vertex(uint8_t posX, uint16_t posY, uint8_t posZ, uint8_t texCoord, uint16_t texID, uint8_t light)
+		: data(0)
+	{
+		data |= posX & 0b11111;
+		data |= (posY & 0b111111111) << 5;
+		data |= (posZ & 0b11111) << 14;
+		data |= (texCoord & 0b11) << 19;
+		data |= (texID & 0b111111111) << 21;
+		data |= (light & 0b11) << 30;
+	}
 };

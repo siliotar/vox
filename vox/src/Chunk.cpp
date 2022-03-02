@@ -35,68 +35,72 @@ void Chunk::calculateMesh(const Chunk* left, const Chunk* right, const Chunk* ba
 	if (!modified)
 		return;
 	mesh.clear();
-	for (size_t y = 0; y < CHUNK_Y; ++y)
+	for (uint y = 0; y < CHUNK_Y; ++y)
 	{
-		for (size_t z = 0; z < CHUNK_Z; z++)
+		for (uint z = 0; z < CHUNK_Z; z++)
 		{
-			for (size_t x = 0; x < CHUNK_X; x++)
+			for (uint x = 0; x < CHUNK_X; x++)
 			{
-				int	posX = x + _x;
-				int	posY = y;
-				int	posZ = z + _z;
 				if (blocks[x + z * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0)
 					continue;
 				uint texID = blocks[x + z * CHUNK_X + y * CHUNK_Z * CHUNK_X].Texture;
-				float	textureLeft = (float)(texID % TextureAtlasX) * TextureSize;
-				float	textureDown = (float)(TextureAtlasY - 1 - texID / TextureAtlasY) * TextureSize;
 				if (y == 0 || blocks[x + z * CHUNK_X + (y - 1) * CHUNK_Z * CHUNK_X].ID == 0)
 				{
-					mesh.emplace_back(posX, posY - 1.5f, posZ, textureLeft, textureDown);
-					mesh.emplace_back(posX + 1.0f, posY - 1.5f, posZ, textureLeft + TextureSize, textureDown);
-					mesh.emplace_back(posX + 1.0f, posY - 1.5f, posZ + 1.0f, textureLeft + TextureSize, textureDown + TextureSize);
-					mesh.emplace_back(posX, posY - 1.5f, posZ + 1.0f, textureLeft, textureDown + TextureSize);
+					mesh.emplace_back(x, y, z, 0, texID, 0);
+					mesh.emplace_back(x + 1, y, z, 1, texID, 0);
+					mesh.emplace_back(x + 1, y, z + 1, 2, texID, 0);
+					mesh.emplace_back(x, y, z + 1, 3, texID, 0);
 				}
 				if (y == (CHUNK_Y - 1) || blocks[x + z * CHUNK_X + (y + 1) * CHUNK_Z * CHUNK_X].ID == 0)
 				{
-					mesh.emplace_back(posX, posY - 0.5f, posZ + 1.0f, textureLeft, textureDown);
-					mesh.emplace_back(posX + 1.0f, posY - 0.5f, posZ + 1.0f, textureLeft + TextureSize, textureDown);
-					mesh.emplace_back(posX + 1.0f, posY - 0.5f, posZ, textureLeft + TextureSize, textureDown + TextureSize);
-					mesh.emplace_back(posX, posY - 0.5f, posZ, textureLeft, textureDown + TextureSize);
+					mesh.emplace_back(x, y + 1, z + 1, 0, texID, 3);
+					mesh.emplace_back(x + 1, y + 1, z + 1, 1, texID, 3);
+					mesh.emplace_back(x + 1, y + 1, z, 2, texID, 3);
+					mesh.emplace_back(x, y + 1, z, 3, texID, 3);
 				}
 				if ((z == 0 && (!front || front->blocks[x + (CHUNK_Z - 1) * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0)) \
 					|| (z != 0 && blocks[x + (z - 1) * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0))
 				{
-					mesh.emplace_back(posX + 1.0f, posY - 1.5f, posZ, textureLeft, textureDown);
-					mesh.emplace_back(posX, posY - 1.5f, posZ, textureLeft + TextureSize, textureDown);
-					mesh.emplace_back(posX, posY - 0.5f, posZ, textureLeft + TextureSize, textureDown + TextureSize);
-					mesh.emplace_back(posX + 1.0f, posY - 0.5f, posZ, textureLeft, textureDown + TextureSize);
+					mesh.emplace_back(x + 1, y, z, 0, texID, 2);
+					mesh.emplace_back(x, y, z, 1, texID, 2);
+					mesh.emplace_back(x, y + 1, z, 2, texID, 2);
+					mesh.emplace_back(x + 1, y + 1, z, 3, texID, 2);
 				}
 				if ((z == (CHUNK_Z - 1) && (!back || back->blocks[x + (0) * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0)) \
 					|| (z != (CHUNK_Z - 1) && blocks[x + (z + 1) * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0))
 				{
-					mesh.emplace_back(posX, posY - 1.5f, posZ + 1.0f, textureLeft, textureDown);
-					mesh.emplace_back(posX + 1.0f, posY - 1.5f, posZ + 1.0f, textureLeft + TextureSize, textureDown);
-					mesh.emplace_back(posX + 1.0f, posY - 0.5f, posZ + 1.0f, textureLeft + TextureSize, textureDown + TextureSize);
-					mesh.emplace_back(posX, posY - 0.5f, posZ + 1.0f, textureLeft, textureDown + TextureSize);
+					mesh.emplace_back(x, y, z + 1, 0, texID, 2);
+					mesh.emplace_back(x + 1, y, z + 1, 1, texID, 2);
+					mesh.emplace_back(x + 1, y + 1, z + 1, 2, texID, 2);
+					mesh.emplace_back(x, y + 1, z + 1, 3, texID, 2);
 				}
 				if ((x == 0 && (!right || right->blocks[(CHUNK_X - 1) + z * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0)) \
 					|| (x != 0 && blocks[(x - 1) + z * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0))
 				{
-					mesh.emplace_back(posX, posY - 1.5f, posZ, textureLeft, textureDown);
-					mesh.emplace_back(posX, posY - 1.5f, posZ + 1.0f, textureLeft + TextureSize, textureDown);
-					mesh.emplace_back(posX, posY - 0.5f, posZ + 1.0f, textureLeft + TextureSize, textureDown + TextureSize);
-					mesh.emplace_back(posX, posY - 0.5f, posZ, textureLeft, textureDown + TextureSize);
+					mesh.emplace_back(x, y, z, 0, texID, 1);
+					mesh.emplace_back(x, y, z + 1, 1, texID, 1);
+					mesh.emplace_back(x, y + 1, z + 1, 2, texID, 1);
+					mesh.emplace_back(x, y + 1, z, 3, texID, 1);
 				}
 				if ((x == (CHUNK_X - 1) && (!left || left->blocks[(0) + z * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0)) \
 					|| (x != (CHUNK_X - 1) && blocks[(x + 1) + z * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0))
 				{
-					mesh.emplace_back(posX + 1.0f, posY - 1.5f, posZ + 1.0f, textureLeft, textureDown);
-					mesh.emplace_back(posX + 1.0f, posY - 1.5f, posZ, textureLeft + TextureSize, textureDown);
-					mesh.emplace_back(posX + 1.0f, posY - 0.5f, posZ, textureLeft + TextureSize, textureDown + TextureSize);
-					mesh.emplace_back(posX + 1.0f, posY - 0.5f, posZ + 1.0f, textureLeft, textureDown + TextureSize);
+					mesh.emplace_back(x + 1, y, z + 1, 0, texID, 1);
+					mesh.emplace_back(x + 1, y, z, 1, texID, 1);
+					mesh.emplace_back(x + 1, y + 1, z, 2, texID, 1);
+					mesh.emplace_back(x + 1, y + 1, z + 1, 3, texID, 1);
 				}
 			}
 		}
 	}
 	modified = false;
+}
+
+void Chunk::draw(VertexArray& va, const VertexBufferLayout& vbLayout, Shader& shader)
+{
+	VertexBuffer vb(mesh.data(), mesh.size() * sizeof(Vertex), GL_STATIC_DRAW);
+	va.addBuffer(vb, vbLayout);
+	shader.setUniform2f("chunkCoord", _x, _z);
+	vb.bind();
+	glDrawElements(GL_TRIANGLES, mesh.size() / 4 * 6, GL_UNSIGNED_INT, nullptr);
 }

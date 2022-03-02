@@ -8,6 +8,10 @@
 #include "Vertex.hpp"
 #include <vector>
 #include "Settings.hpp"
+#include "VertexBuffer.hpp"
+#include "VertexArray.hpp"
+#include "VertexBufferLayout.hpp"
+#include "Shader.hpp"
 
 class Chunk
 {
@@ -24,4 +28,5 @@ public:
 	Chunk(Chunk& other) = delete;
 	void operator=(const Chunk& other) = delete;
 	void calculateMesh(const Chunk* left, const Chunk* right, const Chunk* back, const Chunk* front);
+	void draw(VertexArray& va, const VertexBufferLayout& vbLayout, Shader& shader);
 };

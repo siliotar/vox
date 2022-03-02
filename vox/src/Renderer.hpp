@@ -16,11 +16,8 @@ class Renderer
 private:
 	static Renderer* _renderer;
 	VertexArray _va;
-	VertexBuffer _vb;
 	VertexBufferLayout _vbLayout;
 	IndexBuffer _ib;
-	Vertex* _rectVertexBuffer = nullptr;
-	Vertex* _rectVertexBufferPtr = nullptr;
 	GLuint* _rectIndexBuffer = nullptr;
 	Shader _shader;
 	Texture _textureAtlas;
@@ -28,8 +25,7 @@ private:
 
 	glm::mat4	_model;
 
-	static const size_t	MaxRectCount = 10000;
-	static const size_t	MaxVertexCount = MaxRectCount * 4;
+	static const size_t	MaxRectCount = CHUNK_X * CHUNK_Y * CHUNK_Z * 6 / 2;
 	static const size_t	MaxIndexCount = MaxRectCount * 6;
 
 	Renderer();
@@ -40,10 +36,6 @@ public:
 
 	static void	init();
 	static void	shutdown();
-
-	static void	beginBatch();
-	static void	endBatch();
-	static void	flush();
 
 	static void drawMap(Map& map);
 };

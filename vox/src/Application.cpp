@@ -94,12 +94,7 @@ int main(void)
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		Renderer::beginBatch();
-
 		Renderer::drawMap(map);
-
-		Renderer::endBatch();
-		Renderer::flush();
 
 		if (Events::pressed(GLFW_KEY_ESCAPE))
 			Window::shouldClose(true);

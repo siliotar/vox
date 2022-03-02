@@ -6,19 +6,16 @@
 Renderer* Renderer::_renderer = nullptr;
 
 Renderer::Renderer()
-	: _va(), _vb(nullptr, MaxVertexCount * sizeof(Vertex), GL_DYNAMIC_DRAW), _vbLayout(),
-	_ib(nullptr, MaxIndexCount * sizeof(GLuint), GL_DYNAMIC_DRAW),
+	: _va(), _vbLayout(),
+	_ib(nullptr, MaxIndexCount * sizeof(GLuint), GL_STATIC_DRAW),
 	_shader("res/shaders/Basic.vert", "res/shaders/Basic.frag"),
 	_textureAtlas("res/textures/atlas.png"), _model(1.0f), _indexCount(0)
 {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	_vbLayout.push<float>(3);
-	_vbLayout.push<float>(2);
-	_va.addBuffer(_vb, _vbLayout);
+	_vbLayout.push<float>(1);
 
-	_rectVertexBuffer = new Vertex[MaxVertexCount];
 	_rectIndexBuffer = new GLuint[MaxIndexCount];
 
 	size_t offset = 0;
@@ -46,7 +43,6 @@ Renderer::Renderer()
 
 Renderer::~Renderer()
 {
-	delete[] _rectVertexBuffer;
 }
 
 void	Renderer::init()
@@ -66,35 +62,17 @@ void	Renderer::shutdown()
 	_renderer = nullptr;
 }
 
-void	Renderer::beginBatch()
-{
-	_renderer->_rectVertexBufferPtr = _renderer->_rectVertexBuffer;
-	glm::mat4 mvp = Camera::getProjection() * Camera::getView() * _renderer->_model;
-	_renderer->_shader.setUniformMatrix4f("MVP", mvp);
-}
-
-void	Renderer::endBatch()
-{
-	GLsizeiptr	vertexBufferSize = (uint8_t*)_renderer->_rectVertexBufferPtr - (uint8_t*)_renderer->_rectVertexBuffer;
-	_renderer->_vb.subData(_renderer->_rectVertexBuffer, vertexBufferSize);
-}
-
-void	Renderer::flush()
-{
-	_renderer->_va.bind();
-	_renderer->_ib.bind();
-
-	glDrawElements(GL_TRIANGLES, _renderer->_indexCount, GL_UNSIGNED_INT, nullptr);
-
-	_renderer->_indexCount = 0;
-}
-
 void	Renderer::drawMap(Map& map)
 {
 	//int	playerChunkX = static_cast<int>(Camera::getPlayerPosition().x) / CHUNK_X;
 	//int	playerChunkZ = static_cast<int>(Camera::getPlayerPosition().z) / CHUNK_Z;
 	int	playerChunkX = 0;
 	int	playerChunkZ = 0;
+	_renderer->_va.bind();
+	_renderer->_ib.bind();
+	glm::mat4 mvp = Camera::getProjection() * Camera::getView() * _renderer->_model;
+	_renderer->_shader.bind();
+	_renderer->_shader.setUniformMatrix4f("MVP", mvp);
 	for (int z = playerChunkZ - RenderDistance; z <= playerChunkZ + RenderDistance; ++z)
 	{
 		for (int x = playerChunkX - RenderDistance; x <= playerChunkX + RenderDistance; ++x)
@@ -104,23 +82,7 @@ void	Renderer::drawMap(Map& map)
 			const Chunk*	back = map.getChunk(x, z + 1);
 			const Chunk*	front = map.getChunk(x, z - 1);
 			map.getChunk(x, z)->calculateMesh(left, right, back, front);
-			std::vector<Vertex>& mesh = map.getChunk(x, z)->mesh;
-			size_t size = mesh.size();
-			Vertex* data = mesh.data();
-			for (size_t k = 0; k < size; k += 4)
-			{
-				if (_renderer->_indexCount >= MaxIndexCount)
-				{
-					endBatch();
-					flush();
-					beginBatch();
-				}
-
-				memcpy(_renderer->_rectVertexBufferPtr, &data[k], 4 * sizeof(Vertex));
-
-				_renderer->_rectVertexBufferPtr += 4;
-				_renderer->_indexCount += 6;
-			}
+			map.getChunk(x, z)->draw(_renderer->_va, _renderer->_vbLayout, _renderer->_shader);
 		}
 	}
 }
