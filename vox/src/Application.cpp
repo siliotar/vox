@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include "Renderer.hpp"
 #include "Events.hpp"
 #include "Camera.hpp"
@@ -39,14 +40,23 @@ int main(void)
 
 	size_t frames = 0;
 	double startTime = glfwGetTime();
+	double lastFPSTime = startTime;
 
 	/* Loop until the user closes the window */
 	while (!Window::shouldClose())
 	{
-		++frames;
 		double	currentTime = glfwGetTime();
 		deltaTime = currentTime - lastTime;
 		lastTime = currentTime;
+		if (currentTime - lastFPSTime >= 1.0)
+		{
+			double fps = double(frames) / (currentTime - lastFPSTime);
+			std::ostringstream	ss;
+			ss << "vox [" << fps << " FPS]";
+			Window::setTitle(ss.str());
+			lastFPSTime = currentTime;
+			frames = 0;
+		}
 
 		Events::poll();
 
@@ -100,9 +110,8 @@ int main(void)
 			Window::shouldClose(true);
 
 		Window::swapBuffers();
+		++frames;
 	}
-
-	std::cout << (double)frames / (glfwGetTime() - startTime) << std::endl;
 
 	Renderer::shutdown();
 	Camera::shutdown();

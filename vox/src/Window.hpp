@@ -22,4 +22,5 @@ public:
 	static void shouldClose(bool flag);
 	static void displayCursor();
 	static void hideCursor();
+	static void setTitle(const std::string& str);
 };

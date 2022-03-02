@@ -90,3 +90,8 @@ void	Window::hideCursor()
 	glfwSetInputMode(Window::window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	//Events::_cursor_locked = true;
 }
+
+void	Window::setTitle(const std::string& title)
+{
+	glfwSetWindowTitle(window, title.c_str());
+}
