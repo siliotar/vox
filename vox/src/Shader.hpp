@@ -24,4 +24,5 @@ public:
 	void	setUniform1i(const std::string& name, int value);
 	void	setUniformMatrix4f(const std::string& name, const glm::mat4& matrix);
 	void	setUniform2f(const std::string& name, float v1, float v2);
+	void	setUniform2i(const std::string& name, int v1, int v2);
 };

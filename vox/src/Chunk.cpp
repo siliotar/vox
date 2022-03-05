@@ -100,7 +100,7 @@ void Chunk::draw(VertexArray& va, const VertexBufferLayout& vbLayout, Shader& sh
 {
 	VertexBuffer vb(mesh.data(), mesh.size() * sizeof(Vertex), GL_STATIC_DRAW);
 	va.addBuffer(vb, vbLayout);
-	shader.setUniform2f("chunkCoord", _x, _z);
+	shader.setUniform2i("chunkCoord", _x, _z);
 	vb.bind();
 	glDrawElements(GL_TRIANGLES, mesh.size() / 4 * 6, GL_UNSIGNED_INT, nullptr);
 }

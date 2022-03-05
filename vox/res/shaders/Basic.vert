@@ -6,7 +6,7 @@ out vec2 v_TexCoord;
 out float v_Light;
 
 uniform mat4 MVP;
-uniform vec2 chunkCoord;
+uniform ivec2 chunkCoord;
 
 vec2 texCoords[4] = vec2[4](
 	vec2(0.0f, 0.0f),
@@ -21,9 +21,9 @@ uint atlasYSize = 16u;
 
 void main()
 {
-	float posX = chunkCoord.x + float(vertexData & 0x1fu);
+	float posX = float(chunkCoord.x) + float(vertexData & 0x1fu);
 	float posY = float((vertexData >> 5u) & 0x1ffu) - 1.5f;
-	float posZ = chunkCoord.y + float((vertexData >> 14u) & 0x1fu);
+	float posZ = float(chunkCoord.y) + float((vertexData >> 14u) & 0x1fu);
 	
 	vec2 texCoord = texCoords[(vertexData >> 19u) & 0x3u];
 	uint texID = (vertexData >> 21u) & 0x1ffu;

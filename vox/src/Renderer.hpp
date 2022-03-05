@@ -16,11 +16,11 @@ class Renderer
 private:
 	static Renderer* _renderer;
 	VertexArray _va;
-	VertexBufferLayout _vbLayout;
+	VertexBufferLayout _voxelvbLayout;
 	IndexBuffer _ib;
 	GLuint* _rectIndexBuffer = nullptr;
-	Shader _shader;
-	Texture _textureAtlas;
+	Shader _voxelShader;
+	Texture _voxelTextureAtlas;
 	uint _indexCount;
 
 	glm::mat4	_model;

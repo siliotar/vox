@@ -51,18 +51,18 @@ namespace Events
 	{
 		if (_cursor_started)
 		{
-			_deltaX += xpos - _x;
-			_deltaY += ypos - _y;
+			_deltaX += float(xpos) - _x;
+			_deltaY += float(ypos) - _y;
 		}
 		else
 			_cursor_started = true;
-		_x = xpos;
-		_y = ypos;
+		_x = float(xpos);
+		_y = float(ypos);
 	}
 
 	void window_size_callback(GLFWwindow* window, int width, int height)
 	{
-		glViewport(0, 0, width, height);
+		//glViewport(0, 0, width, height);
 		Window::width = width;
 		Window::height = height;
 	}

@@ -3,6 +3,8 @@
 #include "Chunk.hpp"
 #include <map>
 
+#define MaxChunkZ 1024
+
 class Map
 {
 private:

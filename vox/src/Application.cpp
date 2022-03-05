@@ -3,6 +3,7 @@
 #include "Renderer.hpp"
 #include "Events.hpp"
 #include "Camera.hpp"
+#include "FrameBuffer.hpp"
 
 #include "Chunk.hpp"
 #include "Map.hpp"
@@ -13,6 +14,14 @@
 int main(void)
 {
 	Window::init(1366, 768, "vox");
+
+	FrameBufferSpecification fbSpec;
+	fbSpec.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER, FrameBufferTextureFormat::Depth };
+	fbSpec.Width = Window::width;
+	fbSpec.Height = Window::height;
+	FrameBuffer fb(fbSpec);
+	fb.bind();
+
 	Events::init();
 	Camera::init();
 	Renderer::init();
@@ -83,9 +92,9 @@ int main(void)
 		if (move.x != 0.0f || move.y != 0.0f || move.z != 0.0f)
 		{
 			move = glm::normalize(move);
-			Camera::moveFront(move.x * movementSpeed * deltaTime);
-			Camera::moveRight(move.y * movementSpeed * deltaTime);
-			Camera::moveUp(move.z * movementSpeed * deltaTime);
+			Camera::moveFront(move.x * movementSpeed * float(deltaTime));
+			Camera::moveRight(move.y * movementSpeed * float(deltaTime));
+			Camera::moveUp(move.z * movementSpeed * float(deltaTime));
 		}
 
 		if (Events::_cursor_locked)
@@ -102,9 +111,18 @@ int main(void)
 			Camera::rotate(camY, camX, 0.0f);
 		}
 
+		if (fb.getSpecification().Width != Window::width || fb.getSpecification().Height != Window::height)
+			fb.resize(Window::width, Window::height);
+
+		fb.bind();
+		glEnable(GL_DEPTH_TEST);
+		glClearColor(0.2f, 0.3f, 0.6f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		fb.clearAttachment(1, -1);
 
 		Renderer::drawMap(map);
+
+		fb.draw();
 
 		if (Events::pressed(GLFW_KEY_ESCAPE))
 			Window::shouldClose(true);
