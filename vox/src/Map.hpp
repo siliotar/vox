@@ -3,8 +3,6 @@
 #include "Chunk.hpp"
 #include <map>
 
-#define MaxChunkZ 1024
-
 class Map
 {
 private:
@@ -17,4 +15,5 @@ public:
 
 	Chunk* getChunk(int x, int z);
 	const Chunk* getChunk(int x, int z) const;
+	void setBlock(int x, int y, int z, uint id);
 };

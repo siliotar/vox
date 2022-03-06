@@ -7,7 +7,6 @@
 #include "Block.hpp"
 #include "Vertex.hpp"
 #include <vector>
-#include "Settings.hpp"
 #include "VertexBuffer.hpp"
 #include "VertexArray.hpp"
 #include "VertexBufferLayout.hpp"

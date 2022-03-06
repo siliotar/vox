@@ -4,7 +4,7 @@
 Camera* Camera::_camera = nullptr;
 
 Camera::Camera()
-	: _position(0.5f, 5.0f, 0.5f), _fov(glm::radians(FOV)), _rotation(1.0f)
+	: _position(0.5f, 25.0f, 0.5f), _fov(glm::radians(FOV)), _rotation(1.0f)
 {
 	_updateVectors();
 }

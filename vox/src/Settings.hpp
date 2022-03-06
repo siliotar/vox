@@ -5,3 +5,6 @@
 #define TextureSize 32.0f / 512.0f
 #define RenderDistance 6
 #define FOV 90.0f
+#define MaxChunkCoord 1024
+#define MovementSpeed 7.0f
+#define SprintSpeed 13.0f

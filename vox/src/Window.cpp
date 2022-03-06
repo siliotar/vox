@@ -1,4 +1,5 @@
 #include "Window.hpp"
+#include "Events.hpp"
 
 GLFWwindow* Window::window = nullptr;
 int Window::width = 0;
@@ -82,13 +83,13 @@ void Window::shouldClose(bool flag)
 void	Window::displayCursor()
 {
 	glfwSetInputMode(Window::window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-	//Events::_cursor_locked = false;
+	Events::_cursor_locked = false;
 }
 
 void	Window::hideCursor()
 {
 	glfwSetInputMode(Window::window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	//Events::_cursor_locked = true;
+	Events::_cursor_locked = true;
 }
 
 void	Window::setTitle(const std::string& title)

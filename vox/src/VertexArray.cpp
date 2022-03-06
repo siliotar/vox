@@ -20,7 +20,7 @@ void	VertexArray::addBuffer(const VertexBuffer& vb, const VertexBufferLayout& la
 	{
 		const auto& element = elements[i];
 		glEnableVertexAttribArray(i);
-		if (element.type == GL_UNSIGNED_INT || element.type == GL_UNSIGNED_BYTE)
+		if (element.type == GL_UNSIGNED_INT || element.type == GL_UNSIGNED_BYTE || element.type == GL_INT)
 			glVertexAttribIPointer(i, element.count, element.type, layout.getStride(), (const void*)offset);
 		else
 			glVertexAttribPointer(i, element.count, element.type, element.normalized, layout.getStride(), (const void*)offset);

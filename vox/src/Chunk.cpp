@@ -1,11 +1,13 @@
 #include "Chunk.hpp"
+#include "Settings.hpp"
 #include <cmath>
-#include <iostream>
 
 Chunk::Chunk(int startX, int startZ)
 	: _x(startX), _z(startZ), blocks(nullptr), modified(true)
 {
 	blocks = new Block[CHUNK_X * CHUNK_Y * CHUNK_Z];
+
+	float start = -MaxChunkCoord * CHUNK_X;
 
 	for (size_t ty = 0; ty < CHUNK_Y; ++ty)
 	{
@@ -13,7 +15,14 @@ Chunk::Chunk(int startX, int startZ)
 		{
 			for (size_t tx = 0; tx < CHUNK_X; tx++)
 			{
-				if (ty > ((cos(abs(_x + (int)tx) * 0.6f) * 2.0f + 12.0f)) || ty > ((cos(abs(_z + (int)tz) * 0.6f) * 2.0f + 12.0f)))
+				//float xDist = float(_x + (int)tx) * 0.3f;
+				//float zDist = float(_z + (int)tz) * 0.3f;
+				//float dist = sqrtf(xDist * xDist + zDist * zDist);
+				float x = start + _x + (int)tx;
+				float z = start + _z + (int)tz;
+				//if (ty > cos(dist) * 4.0f + 20.0f)
+				//if (ty > ((cos(abs(_x + (int)tx) * 0.1f) * 6.0f + 22.0f)) || ty > ((cos(abs(_z + (int)tz) * 0.1f) * 6.0f + 22.0f)))
+				if (ty > (((cos(x * 0.1f) + sin(z * 0.1f)) * 6.0f + 16.0f)))
 					blocks[tx + tz * CHUNK_X + ty * CHUNK_Z * CHUNK_X].ID = 0;
 				else if (ty < 7)
 					blocks[tx + tz * CHUNK_X + ty * CHUNK_Z * CHUNK_X].ID = 1;

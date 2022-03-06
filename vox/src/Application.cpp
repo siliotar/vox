@@ -10,6 +10,13 @@
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
+#include "Settings.hpp"
+#include "UI.hpp"
+#include <bitset>
+void hello(float)
+{
+	std::cout << "Hello! :)" << std::endl;
+}
 
 int main(void)
 {
@@ -20,36 +27,34 @@ int main(void)
 	fbSpec.Width = Window::width;
 	fbSpec.Height = Window::height;
 	FrameBuffer fb(fbSpec);
-	fb.bind();
 
 	Events::init();
 	Camera::init();
 	Renderer::init();
-
-	Camera::rotate(glm::radians(89.0f), 0.0f, 0.0f);
+	UI::init();
 
 	double	deltaTime = 0.0f;
 	double	lastTime = glfwGetTime();
-	float	movementSpeed = 5.0f;
+	float	movementSpeed = MovementSpeed;
 
 	float	camX = 0.0f;
 	float	camY = 0.0f;
 
 	Map	map;
-	map.getChunk(0, 0)->blocks[0 + 0 * 16 + 5 * 256].ID = 0;
-	map.getChunk(0, 0)->blocks[0 + 0 * 16 + 5 * 256].Texture = 0;
-	map.getChunk(0, 0)->blocks[1 + 1 * 16 + 5 * 256].ID = 0;
-	map.getChunk(0, 0)->blocks[1 + 1 * 16 + 5 * 256].Texture = 0;
-	map.getChunk(0, 0)->blocks[2 + 2 * 16 + 5 * 256].ID = 0;
-	map.getChunk(0, 0)->blocks[2 + 2 * 16 + 5 * 256].Texture = 0;
-	map.getChunk(0, 0)->blocks[3 + 3 * 16 + 5 * 256].ID = 0;
-	map.getChunk(0, 0)->blocks[3 + 3 * 16 + 5 * 256].Texture = 0;
-	map.getChunk(0, 0)->blocks[4 + 4 * 16 + 5 * 256].ID = 0;
-	map.getChunk(0, 0)->blocks[4 + 4 * 16 + 5 * 256].Texture = 0;
+	map.setBlock(0, 5, 0, 0);
+	map.setBlock(1, 5, 1, 0);
+	map.setBlock(2, 5, 2, 0);
+	map.setBlock(3, 5, 3, 0);
+	map.setBlock(4, 5, 4, 0);
+
+	UI::addElement(std::make_shared<Button>(-0.5f, 0.8f, 0.1f, 0.1f, hello), "test");
+	UI::addElement(std::make_shared<Button>(0.4f, 0.8f, 0.1f, 0.1f, hello), "test");
 
 	size_t frames = 0;
 	double startTime = glfwGetTime();
 	double lastFPSTime = startTime;
+
+	glClearColor(0.2f, 0.3f, 0.6f, 0.0f);
 
 	/* Loop until the user closes the window */
 	while (!Window::shouldClose())
@@ -86,9 +91,9 @@ int main(void)
 			move.z -= 1.0f;
 		if (Events::pressed(GLFW_KEY_LEFT_CONTROL) || Events::repeat(GLFW_KEY_LEFT_CONTROL) || \
 			Events::pressed(GLFW_KEY_RIGHT_CONTROL) || Events::repeat(GLFW_KEY_RIGHT_CONTROL))
-			movementSpeed = 8.0f;
+			movementSpeed = SprintSpeed;
 		else
-			movementSpeed = 5.0f;
+			movementSpeed = MovementSpeed;
 		if (move.x != 0.0f || move.y != 0.0f || move.z != 0.0f)
 		{
 			move = glm::normalize(move);
@@ -97,10 +102,18 @@ int main(void)
 			Camera::moveUp(move.z * movementSpeed * float(deltaTime));
 		}
 
+		if (Events::pressed(GLFW_KEY_TAB))
+		{
+			if (Events::_cursor_locked)
+				Window::displayCursor();
+			else
+				Window::hideCursor();
+		}
+
 		if (Events::_cursor_locked)
 		{
 			camY += Events::_deltaY / Window::height * 2;
-			camX -= Events::_deltaX / Window::height * 2;
+			camX -= Events::_deltaX / Window::width * 2;
 
 			if (camY < -glm::radians(89.0f))
 				camY = -glm::radians(89.0f);
@@ -115,12 +128,18 @@ int main(void)
 			fb.resize(Window::width, Window::height);
 
 		fb.bind();
-		glEnable(GL_DEPTH_TEST);
-		glClearColor(0.2f, 0.3f, 0.6f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		fb.clearAttachment(1, -1);
 
+		fb.clearAttachment(1, -1);
 		Renderer::drawMap(map);
+		UI::draw("test");
+
+		if (!Events::_cursor_locked && Events::clicked(GLFW_MOUSE_BUTTON_LEFT))
+		{
+			int invertedY = Window::height - Events::_y - 1.0f;
+			int32_t id = fb.readPixel(1, Events::_x, invertedY);
+			UI::call(id, Events::_x, invertedY);
+		}
 
 		fb.draw();
 
@@ -131,6 +150,7 @@ int main(void)
 		++frames;
 	}
 
+	UI::terminate();
 	Renderer::shutdown();
 	Camera::shutdown();
 	Window::terminate();

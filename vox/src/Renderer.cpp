@@ -2,6 +2,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "Window.hpp"
 #include "Camera.hpp"
+#include "Settings.hpp"
 
 Renderer* Renderer::_renderer = nullptr;
 
@@ -11,9 +12,6 @@ Renderer::Renderer()
 	_voxelShader("res/shaders/Basic.vert", "res/shaders/Basic.frag"),
 	_voxelTextureAtlas("res/textures/atlas.png"), _model(1.0f), _indexCount(0)
 {
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 	_voxelvbLayout.push<uint32_t>(1);
 
 	_rectIndexBuffer = new GLuint[MaxIndexCount];
@@ -62,6 +60,10 @@ void	Renderer::shutdown()
 
 void	Renderer::drawMap(Map& map)
 {
+	glDrawBuffer(GL_COLOR_ATTACHMENT0);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	int	playerChunkX = static_cast<int>(Camera::getPlayerPosition().x) / CHUNK_X;
 	int	playerChunkZ = static_cast<int>(Camera::getPlayerPosition().z) / CHUNK_Z;
 	_renderer->_va.bind();

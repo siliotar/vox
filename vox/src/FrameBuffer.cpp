@@ -150,7 +150,7 @@ void FrameBuffer::resize(uint32_t width, uint32_t height)
 int FrameBuffer::readPixel(uint32_t attachmentIndex, int x, int y)
 {
 	glReadBuffer(GL_COLOR_ATTACHMENT0 + attachmentIndex);
-	int pixelData;
+	int32_t pixelData;
 	glReadPixels(x, y, 1, 1, GL_RED_INTEGER, GL_INT, &pixelData);
 	return pixelData;
 }
@@ -186,8 +186,7 @@ void FrameBuffer::draw()
 	};
 	unbind();
 	glDisable(GL_DEPTH_TEST);
-	glClearColor(0.2f, 0.3f, 0.6f, 0.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
+	glDisable(GL_BLEND);
 	_shader.bind();
 	_shader.setUniform1i("u_Texture", 0);
 	glBindTexture(GL_TEXTURE_2D, _colorAttachments[0]);
