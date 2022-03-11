@@ -46,6 +46,7 @@ int main(void)
 	map.setBlock(2, 5, 2, 0);
 	map.setBlock(3, 5, 3, 0);
 	map.setBlock(4, 5, 4, 0);
+	map.setBlock(5, 0, 5, 2);
 
 	UI::addElement(std::make_shared<Button>(-0.5f, 0.8f, 0.1f, 0.1f, hello), "test");
 	UI::addElement(std::make_shared<Button>(0.4f, 0.8f, 0.1f, 0.1f, hello), "test");
@@ -108,6 +109,7 @@ int main(void)
 				Window::displayCursor();
 			else
 				Window::hideCursor();
+			std::cout << Camera::getPlayerPosition().x << ", " << Camera::getPlayerPosition().y << ", " << Camera::getPlayerPosition().z << std::endl;
 		}
 
 		if (Events::_cursor_locked)
@@ -132,6 +134,7 @@ int main(void)
 
 		fb.clearAttachment(1, -1);
 		Renderer::drawMap(map);
+#ifdef QWE
 		UI::draw("test");
 
 		if (!Events::_cursor_locked && Events::clicked(GLFW_MOUSE_BUTTON_LEFT))
@@ -140,7 +143,7 @@ int main(void)
 			int32_t id = fb.readPixel(1, Events::_x, invertedY);
 			UI::call(id, Events::_x, invertedY);
 		}
-
+#endif
 		fb.draw();
 
 		if (Events::pressed(GLFW_KEY_ESCAPE))

@@ -104,3 +104,8 @@ void	Shader::setUniform2i(const std::string& name, int v1, int v2)
 {
 	glUniform2i(getUniformLocation(name), v1, v2);
 }
+
+void	Shader::setUniform3i(const std::string& name, int v1, int v2, int v3)
+{
+	glUniform3i(getUniformLocation(name), v1, v2, v3);
+}

@@ -27,5 +27,6 @@ public:
 	Chunk(Chunk& other) = delete;
 	void operator=(const Chunk& other) = delete;
 	void calculateMesh(const Chunk* left, const Chunk* right, const Chunk* back, const Chunk* front);
+	void calculateGreedyMesh(const Chunk* left, const Chunk* right, const Chunk* back, const Chunk* front);
 	void draw(VertexArray& va, const VertexBufferLayout& vbLayout, Shader& shader);
 };

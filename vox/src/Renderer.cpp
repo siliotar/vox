@@ -84,7 +84,7 @@ void	Renderer::drawMap(Map& map)
 			const Chunk*	right = map.getChunk(x - 1, z);
 			const Chunk*	back = map.getChunk(x, z + 1);
 			const Chunk*	front = map.getChunk(x, z - 1);
-			map.getChunk(x, z)->calculateMesh(left, right, back, front);
+			map.getChunk(x, z)->calculateGreedyMesh(left, right, back, front);
 			map.getChunk(x, z)->draw(_renderer->_va, _renderer->_voxelvbLayout, _renderer->_voxelShader);
 		}
 	}

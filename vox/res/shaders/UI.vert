@@ -5,7 +5,7 @@ layout (location = 1) in vec2 texCoord;
 layout (location = 2) in int ID;
 
 out vec2 v_TexCoord;
-out flat int v_ElementID;
+flat out int v_ElementID;
 
 void main()
 {

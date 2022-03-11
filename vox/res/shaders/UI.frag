@@ -4,7 +4,7 @@ layout (location = 0) out vec4 FragColor;
 layout (location = 1) out int ElementID;
 
 in vec2 v_TexCoord;
-in flat int v_ElementID;
+flat in int v_ElementID;
 
 uniform sampler2D u_Texture;
 
