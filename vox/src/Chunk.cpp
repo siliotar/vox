@@ -1,35 +1,41 @@
 #include "Chunk.hpp"
 #include "Settings.hpp"
+#include "Map.hpp"
 #include <cmath>
 #include <iostream>
 
-Chunk::Chunk(int startX, int startZ)
-	: _x(startX), _z(startZ), blocks(nullptr), modified(true)
+#define BLOCK_COORD(x, y, z) x + z * CHUNK_X + y * CHUNK_X * CHUNK_Z
+
+Chunk::Chunk(int startX, int startY, int startZ)
+	: _x(startX), _y(startY), _z(startZ), blocks(nullptr), modified(true)
 {
 	blocks = new Block[CHUNK_X * CHUNK_Y * CHUNK_Z];
 
-	float start = -MaxChunkCoord * CHUNK_X;
+	float start = -MaxChunkWidth * CHUNK_X;
 
 	for (size_t ty = 0; ty < CHUNK_Y; ++ty)
 	{
+		float y = _y + (int)ty;
 		for (size_t tz = 0; tz < CHUNK_Z; tz++)
 		{
+			float z = start + _z + (int)tz;
+			float zsin = sin(z * 0.1f);
 			for (size_t tx = 0; tx < CHUNK_X; tx++)
 			{
 				//float xDist = float(_x + (int)tx) * 0.3f;
 				//float zDist = float(_z + (int)tz) * 0.3f;
 				//float dist = sqrtf(xDist * xDist + zDist * zDist);
 				float x = start + _x + (int)tx;
-				float z = start + _z + (int)tz;
 				//if (ty > cos(dist) * 4.0f + 20.0f)
 				//if (ty > ((cos(abs(_x + (int)tx) * 0.1f) * 6.0f + 22.0f)) || ty > ((cos(abs(_z + (int)tz) * 0.1f) * 6.0f + 22.0f)))
-				if (ty > (((cos(x * 0.1f) + sin(z * 0.1f)) * 6.0f + 16.0f)))
-					blocks[tx + tz * CHUNK_X + ty * CHUNK_Z * CHUNK_X].ID = 0;
-				else if (ty < 7)
-					blocks[tx + tz * CHUNK_X + ty * CHUNK_Z * CHUNK_X].ID = 1;
+				if (y > (((cos(x * 0.1f) + zsin) * 6.0f + 16.0f)))
+				//if (y > 10)
+					blocks[BLOCK_COORD(tx, ty, tz)].ID = 0;
+				else if (y < 7)
+					blocks[BLOCK_COORD(tx, ty, tz)].ID = 1;
 				else
-					blocks[tx + tz * CHUNK_X + ty * CHUNK_Z * CHUNK_X].ID = 2;
-				blocks[tx + tz * CHUNK_X + ty * CHUNK_Z * CHUNK_X].Texture = blocks[tx + tz * CHUNK_X + ty * CHUNK_Z * CHUNK_X].ID;
+					blocks[BLOCK_COORD(tx, ty, tz)].ID = 2;
+				blocks[BLOCK_COORD(tx, ty, tz)].Texture = blocks[BLOCK_COORD(tx, ty, tz)].ID;
 			}
 		}
 	}
@@ -40,10 +46,16 @@ Chunk::~Chunk()
 	delete[] blocks;
 }
 
-void Chunk::calculateMesh(const Chunk* left, const Chunk* right, const Chunk* back, const Chunk* front)
+void Chunk::calculateMesh(Map& map)
 {
 	if (!modified)
 		return;
+	const Chunk* left = map.getChunk(_x / CHUNK_X + 1, _y / CHUNK_Y, _z / CHUNK_Z);
+	const Chunk* right = map.getChunk(_x / CHUNK_X - 1, _y / CHUNK_Y, _z / CHUNK_Z);
+	const Chunk* back = map.getChunk(_x / CHUNK_X, _y / CHUNK_Y, _z / CHUNK_Z + 1);
+	const Chunk* front = map.getChunk(_x / CHUNK_X, _y / CHUNK_Y, _z / CHUNK_Z - 1);
+	const Chunk* up = map.getChunk(_x / CHUNK_X, _y / CHUNK_Y + 1, _z / CHUNK_Z);
+	const Chunk* down = map.getChunk(_x / CHUNK_X, _y / CHUNK_Y - 1, _z / CHUNK_Z);
 	mesh.clear();
 	for (uint y = 0; y < CHUNK_Y; ++y)
 	{
@@ -51,56 +63,56 @@ void Chunk::calculateMesh(const Chunk* left, const Chunk* right, const Chunk* ba
 		{
 			for (uint x = 0; x < CHUNK_X; x++)
 			{
-				if (_x == 0 && _z == 9 * CHUNK_Z && x == 3 && z == 15 && y == 8)
-					std::cout << "ku" << std::endl;
-				if (blocks[x + z * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0)
+				if (blocks[BLOCK_COORD(x, y, z)].ID == 0)
 					continue;
-				uint texID = blocks[x + z * CHUNK_X + y * CHUNK_Z * CHUNK_X].Texture;
-				if (y == 0 || blocks[x + z * CHUNK_X + (y - 1) * CHUNK_Z * CHUNK_X].ID == 0)
+				uint texID = blocks[BLOCK_COORD(x, y, z)].Texture;
+				if (y == 0 && (!down || down->blocks[BLOCK_COORD(x, (CHUNK_Y - 1), z)].ID == 0) \
+					|| (y != 0 && blocks[BLOCK_COORD(x, (y - 1), z)].ID == 0))
 				{
-					mesh.emplace_back(x, y, z, 0, texID, 0);
-					mesh.emplace_back(x + 1, y, z, 1, texID, 0);
-					mesh.emplace_back(x + 1, y, z + 1, 2, texID, 0);
-					mesh.emplace_back(x, y, z + 1, 3, texID, 0);
+					mesh.emplace_back(x, y, z, texID, 0);
+					mesh.emplace_back(x + 1, y, z, texID, 0);
+					mesh.emplace_back(x + 1, y, z + 1, texID, 0);
+					mesh.emplace_back(x, y, z + 1, texID, 0);
 				}
-				if (y == (CHUNK_Y - 1) || blocks[x + z * CHUNK_X + (y + 1) * CHUNK_Z * CHUNK_X].ID == 0)
+				if (y == (CHUNK_Y - 1) && (!up || up->blocks[BLOCK_COORD(x, 0, z)].ID == 0) \
+					|| (y != (CHUNK_Y - 1) && blocks[BLOCK_COORD(x, (y + 1), z)].ID == 0))
 				{
-					mesh.emplace_back(x, y + 1, z + 1, 0, texID, 3);
-					mesh.emplace_back(x + 1, y + 1, z + 1, 1, texID, 3);
-					mesh.emplace_back(x + 1, y + 1, z, 2, texID, 3);
-					mesh.emplace_back(x, y + 1, z, 3, texID, 3);
+					mesh.emplace_back(x, y + 1, z + 1, texID, 3);
+					mesh.emplace_back(x + 1, y + 1, z + 1, texID, 3);
+					mesh.emplace_back(x + 1, y + 1, z, texID, 3);
+					mesh.emplace_back(x, y + 1, z, texID, 3);
 				}
-				if ((z == 0 && (!front || front->blocks[x + (CHUNK_Z - 1) * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0)) \
-					|| (z != 0 && blocks[x + (z - 1) * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0))
+				if ((z == 0 && (!front || front->blocks[BLOCK_COORD(x, y, (CHUNK_Z - 1))].ID == 0)) \
+					|| (z != 0 && blocks[BLOCK_COORD(x, y, (z - 1))].ID == 0))
 				{
-					mesh.emplace_back(x + 1, y, z, 0, texID, 2);
-					mesh.emplace_back(x, y, z, 1, texID, 2);
-					mesh.emplace_back(x, y + 1, z, 2, texID, 2);
-					mesh.emplace_back(x + 1, y + 1, z, 3, texID, 2);
+					mesh.emplace_back(x + 1, y, z, texID, 2);
+					mesh.emplace_back(x, y, z, texID, 2);
+					mesh.emplace_back(x, y + 1, z, texID, 2);
+					mesh.emplace_back(x + 1, y + 1, z, texID, 2);
 				}
-				if ((z == (CHUNK_Z - 1) && (!back || back->blocks[x + (0) * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0)) \
-					|| (z != (CHUNK_Z - 1) && blocks[x + (z + 1) * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0))
+				if ((z == (CHUNK_Z - 1) && (!back || back->blocks[BLOCK_COORD(x, y, 0)].ID == 0)) \
+					|| (z != (CHUNK_Z - 1) && blocks[BLOCK_COORD(x, y, (z + 1))].ID == 0))
 				{
-					mesh.emplace_back(x, y, z + 1, 0, texID, 2);
-					mesh.emplace_back(x + 1, y, z + 1, 1, texID, 2);
-					mesh.emplace_back(x + 1, y + 1, z + 1, 2, texID, 2);
-					mesh.emplace_back(x, y + 1, z + 1, 3, texID, 2);
+					mesh.emplace_back(x, y, z + 1, texID, 2);
+					mesh.emplace_back(x + 1, y, z + 1, texID, 2);
+					mesh.emplace_back(x + 1, y + 1, z + 1, texID, 2);
+					mesh.emplace_back(x, y + 1, z + 1, texID, 2);
 				}
-				if ((x == 0 && (!right || right->blocks[(CHUNK_X - 1) + z * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0)) \
-					|| (x != 0 && blocks[(x - 1) + z * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0))
+				if ((x == 0 && (!right || right->blocks[BLOCK_COORD((CHUNK_X - 1), y, z)].ID == 0)) \
+					|| (x != 0 && blocks[BLOCK_COORD((x - 1), y, z)].ID == 0))
 				{
-					mesh.emplace_back(x, y, z, 0, texID, 1);
-					mesh.emplace_back(x, y, z + 1, 1, texID, 1);
-					mesh.emplace_back(x, y + 1, z + 1, 2, texID, 1);
-					mesh.emplace_back(x, y + 1, z, 3, texID, 1);
+					mesh.emplace_back(x, y, z, texID, 1);
+					mesh.emplace_back(x, y, z + 1, texID, 1);
+					mesh.emplace_back(x, y + 1, z + 1, texID, 1);
+					mesh.emplace_back(x, y + 1, z, texID, 1);
 				}
-				if ((x == (CHUNK_X - 1) && (!left || left->blocks[(0) + z * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0)) \
-					|| (x != (CHUNK_X - 1) && blocks[(x + 1) + z * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0))
+				if ((x == (CHUNK_X - 1) && (!left || left->blocks[BLOCK_COORD(0, y, z)].ID == 0)) \
+					|| (x != (CHUNK_X - 1) && blocks[BLOCK_COORD((x + 1), y, z)].ID == 0))
 				{
-					mesh.emplace_back(x + 1, y, z + 1, 0, texID, 1);
-					mesh.emplace_back(x + 1, y, z, 1, texID, 1);
-					mesh.emplace_back(x + 1, y + 1, z, 2, texID, 1);
-					mesh.emplace_back(x + 1, y + 1, z + 1, 3, texID, 1);
+					mesh.emplace_back(x + 1, y, z + 1, texID, 1);
+					mesh.emplace_back(x + 1, y, z, texID, 1);
+					mesh.emplace_back(x + 1, y + 1, z, texID, 1);
+					mesh.emplace_back(x + 1, y + 1, z + 1, texID, 1);
 				}
 			}
 		}
@@ -108,10 +120,16 @@ void Chunk::calculateMesh(const Chunk* left, const Chunk* right, const Chunk* ba
 	modified = false;
 }
 
-void Chunk::calculateGreedyMesh(const Chunk* left, const Chunk* right, const Chunk* back, const Chunk* front)
+void Chunk::calculateGreedyMesh(Map& map)
 {
 	if (!modified)
 		return;
+	const Chunk* left = map.getChunk(_x / CHUNK_X + 1, _y / CHUNK_Y, _z / CHUNK_Z);
+	const Chunk* right = map.getChunk(_x / CHUNK_X - 1, _y / CHUNK_Y, _z / CHUNK_Z);
+	const Chunk* back = map.getChunk(_x / CHUNK_X, _y / CHUNK_Y, _z / CHUNK_Z + 1);
+	const Chunk* front = map.getChunk(_x / CHUNK_X, _y / CHUNK_Y, _z / CHUNK_Z - 1);
+	const Chunk* up = map.getChunk(_x / CHUNK_X, _y / CHUNK_Y + 1, _z / CHUNK_Z);
+	const Chunk* down = map.getChunk(_x / CHUNK_X, _y / CHUNK_Y - 1, _z / CHUNK_Z);
 	mesh.clear();
 	char upMask = 0b000001;
 	char leftMask = 0b000010;
@@ -127,23 +145,25 @@ void Chunk::calculateGreedyMesh(const Chunk* left, const Chunk* right, const Chu
 		{
 			for (uint x = 0; x < CHUNK_X; x++)
 			{
-				if (blocks[x + z * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0)
+				if (blocks[BLOCK_COORD(x, y, z)].ID == 0)
 					continue;
-				if (y == 0 || blocks[x + z * CHUNK_X + (y - 1) * CHUNK_Z * CHUNK_X].ID == 0)
+				if (y == 0 && (!down || down->blocks[BLOCK_COORD(x, (CHUNK_Y - 1), z)].ID == 0) \
+					|| (y != 0 && blocks[BLOCK_COORD(x, (y - 1), z)].ID == 0))
 					faces[x][y][z] |= downMask;
-				if (y == (CHUNK_Y - 1) || blocks[x + z * CHUNK_X + (y + 1) * CHUNK_Z * CHUNK_X].ID == 0)
+				if (y == (CHUNK_Y - 1) && (!up || up->blocks[BLOCK_COORD(x, 0, z)].ID == 0) \
+					|| (y != (CHUNK_Y - 1) && blocks[BLOCK_COORD(x, (y + 1), z)].ID == 0))
 					faces[x][y][z] |= upMask;
-				if ((z == 0 && (!front || front->blocks[x + (CHUNK_Z - 1) * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0)) \
-					|| (z != 0 && blocks[x + (z - 1) * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0))
+				if ((z == 0 && (!front || front->blocks[BLOCK_COORD(x, y, (CHUNK_Z - 1))].ID == 0)) \
+					|| (z != 0 && blocks[BLOCK_COORD(x, y, (z - 1))].ID == 0))
 					faces[x][y][z] |= frontMask;
-				if ((z == (CHUNK_Z - 1) && (!back || back->blocks[x + (0) * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0)) \
-					|| (z != (CHUNK_Z - 1) && blocks[x + (z + 1) * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0))
+				if ((z == (CHUNK_Z - 1) && (!back || back->blocks[BLOCK_COORD(x, y, 0)].ID == 0)) \
+					|| (z != (CHUNK_Z - 1) && blocks[BLOCK_COORD(x, y, (z + 1))].ID == 0))
 					faces[x][y][z] |= backMask;
-				if ((x == 0 && (!right || right->blocks[(CHUNK_X - 1) + z * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0)) \
-					|| (x != 0 && blocks[(x - 1) + z * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0))
+				if ((x == 0 && (!right || right->blocks[BLOCK_COORD((CHUNK_X - 1), y, z)].ID == 0)) \
+					|| (x != 0 && blocks[BLOCK_COORD((x - 1), y, z)].ID == 0))
 					faces[x][y][z] |= rightMask;
-				if ((x == (CHUNK_X - 1) && (!left || left->blocks[(0) + z * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0)) \
-					|| (x != (CHUNK_X - 1) && blocks[(x + 1) + z * CHUNK_X + y * CHUNK_Z * CHUNK_X].ID == 0))
+				if ((x == (CHUNK_X - 1) && (!left || left->blocks[BLOCK_COORD(0, y, z)].ID == 0)) \
+					|| (x != (CHUNK_X - 1) && blocks[BLOCK_COORD((x + 1), y, z)].ID == 0))
 					faces[x][y][z] |= leftMask;
 			}
 		}
@@ -156,19 +176,20 @@ void Chunk::calculateGreedyMesh(const Chunk* left, const Chunk* right, const Chu
 			{
 				if (faces[x][y][z] == 0)
 					continue;
+				uint texID = blocks[BLOCK_COORD(x, y, z)].Texture;
 				if (faces[x][y][z] & downMask)
 				{
 					uint w = 0;
-					for (uint tx = x; tx < CHUNK_X && (faces[tx][y][z] & downMask); ++tx)
+					for (uint tx = x; tx < CHUNK_X && (faces[tx][y][z] & downMask) && blocks[BLOCK_COORD(tx, y, z)].Texture == texID; ++tx)
 					{
 						faces[tx][y][z] &= ~downMask;
 						++w;
 					}
 					uint h = 1;
-					for (uint tz = z + 1; tz < CHUNK_Z && (faces[x][y][tz] & downMask); ++tz)
+					for (uint tz = z + 1; tz < CHUNK_Z && (faces[x][y][tz] & downMask) && blocks[BLOCK_COORD(x, y, tz)].Texture == texID; ++tz)
 					{
 						uint tw = 0;
-						for (uint tx = x; tx < CHUNK_X && (faces[tx][y][tz] & downMask) && tw < w; ++tx)
+						for (uint tx = x; tx < CHUNK_X && (faces[tx][y][tz] & downMask) && blocks[BLOCK_COORD(tx, y, tz)].Texture == texID && tw < w; ++tx)
 							++tw;
 						if (tw >= w)
 						{
@@ -179,25 +200,24 @@ void Chunk::calculateGreedyMesh(const Chunk* left, const Chunk* right, const Chu
 						else
 							break;
 					}
-					uint texID = 1;
-					mesh.emplace_back(x, y, z, 0, texID, 0);
-					mesh.emplace_back(x + w, y, z, 1, texID, 0);
-					mesh.emplace_back(x + w, y, z + h, 2, texID, 0);
-					mesh.emplace_back(x, y, z + h, 3, texID, 0);
+					mesh.emplace_back(x, y, z, texID, 0);
+					mesh.emplace_back(x + w, y, z, texID, 0);
+					mesh.emplace_back(x + w, y, z + h, texID, 0);
+					mesh.emplace_back(x, y, z + h, texID, 0);
 				}
 				if (faces[x][y][z] & upMask)
 				{
 					uint w = 0;
-					for (uint tx = x; tx < CHUNK_X && (faces[tx][y][z] & upMask); ++tx)
+					for (uint tx = x; tx < CHUNK_X && (faces[tx][y][z] & upMask) && blocks[BLOCK_COORD(tx, y, z)].Texture == texID; ++tx)
 					{
 						faces[tx][y][z] &= ~upMask;
 						++w;
 					}
 					uint h = 1;
-					for (uint tz = z + 1; tz < CHUNK_Z && (faces[x][y][tz] & upMask); ++tz)
+					for (uint tz = z + 1; tz < CHUNK_Z && (faces[x][y][tz] & upMask) && blocks[BLOCK_COORD(x, y, tz)].Texture == texID; ++tz)
 					{
 						uint tw = 0;
-						for (uint tx = x; tx < CHUNK_X && (faces[tx][y][tz] & upMask) && tw < w; ++tx)
+						for (uint tx = x; tx < CHUNK_X && (faces[tx][y][tz] & upMask) && blocks[BLOCK_COORD(tx, y, tz)].Texture == texID && tw < w; ++tx)
 							++tw;
 						if (tw >= w)
 						{
@@ -208,25 +228,24 @@ void Chunk::calculateGreedyMesh(const Chunk* left, const Chunk* right, const Chu
 						else
 							break;
 					}
-					uint texID = 1;
-					mesh.emplace_back(x, y + 1, z + h, 0, texID, 3);
-					mesh.emplace_back(x + w, y + 1, z + h, 1, texID, 3);
-					mesh.emplace_back(x + w, y + 1, z, 2, texID, 3);
-					mesh.emplace_back(x, y + 1, z, 3, texID, 3);
+					mesh.emplace_back(x, y + 1, z + h, texID, 3);
+					mesh.emplace_back(x + w, y + 1, z + h, texID, 3);
+					mesh.emplace_back(x + w, y + 1, z, texID, 3);
+					mesh.emplace_back(x, y + 1, z, texID, 3);
 				}
 				if (faces[x][y][z] & frontMask)
 				{
 					uint w = 0;
-					for (uint tx = x; tx < CHUNK_X && (faces[tx][y][z] & frontMask); ++tx)
+					for (uint tx = x; tx < CHUNK_X && (faces[tx][y][z] & frontMask) && blocks[BLOCK_COORD(tx, y, z)].Texture == texID; ++tx)
 					{
 						faces[tx][y][z] &= ~frontMask;
 						++w;
 					}
 					uint h = 1;
-					for (uint ty = y + 1; ty < CHUNK_Y && (faces[x][ty][z] & frontMask); ++ty)
+					for (uint ty = y + 1; ty < CHUNK_Y && (faces[x][ty][z] & frontMask) && blocks[BLOCK_COORD(x, ty, z)].Texture == texID; ++ty)
 					{
 						uint tw = 0;
-						for (uint tx = x; tx < CHUNK_X && (faces[tx][ty][z] & frontMask) && tw < w; ++tx)
+						for (uint tx = x; tx < CHUNK_X && (faces[tx][ty][z] & frontMask) && blocks[BLOCK_COORD(tx, ty, z)].Texture == texID && tw < w; ++tx)
 							++tw;
 						if (tw >= w)
 						{
@@ -237,25 +256,24 @@ void Chunk::calculateGreedyMesh(const Chunk* left, const Chunk* right, const Chu
 						else
 							break;
 					}
-					uint texID = 1;
-					mesh.emplace_back(x + w, y, z, 0, texID, 2);
-					mesh.emplace_back(x, y, z, 1, texID, 2);
-					mesh.emplace_back(x, y + h, z, 2, texID, 2);
-					mesh.emplace_back(x + w, y + h, z, 3, texID, 2);
+					mesh.emplace_back(x + w, y, z, texID, 2);
+					mesh.emplace_back(x, y, z, texID, 2);
+					mesh.emplace_back(x, y + h, z, texID, 2);
+					mesh.emplace_back(x + w, y + h, z, texID, 2);
 				}
 				if (faces[x][y][z] & backMask)
 				{
 					uint w = 0;
-					for (uint tx = x; tx < CHUNK_X && (faces[tx][y][z] & backMask); ++tx)
+					for (uint tx = x; tx < CHUNK_X && (faces[tx][y][z] & backMask) && blocks[BLOCK_COORD(tx, y, z)].Texture == texID; ++tx)
 					{
 						faces[tx][y][z] &= ~backMask;
 						++w;
 					}
 					uint h = 1;
-					for (uint ty = y + 1; ty < CHUNK_Y && (faces[x][ty][z] & backMask); ++ty)
+					for (uint ty = y + 1; ty < CHUNK_Y && (faces[x][ty][z] & backMask) && blocks[BLOCK_COORD(x, ty, z)].Texture == texID; ++ty)
 					{
 						uint tw = 0;
-						for (uint tx = x; tx < CHUNK_X && (faces[tx][ty][z] & backMask) && tw < w; ++tx)
+						for (uint tx = x; tx < CHUNK_X && (faces[tx][ty][z] & backMask) && blocks[BLOCK_COORD(tx, ty, z)].Texture == texID && tw < w; ++tx)
 							++tw;
 						if (tw >= w)
 						{
@@ -266,25 +284,24 @@ void Chunk::calculateGreedyMesh(const Chunk* left, const Chunk* right, const Chu
 						else
 							break;
 					}
-					uint texID = 1;
-					mesh.emplace_back(x, y, z + 1, 0, texID, 2);
-					mesh.emplace_back(x + w, y, z + 1, 1, texID, 2);
-					mesh.emplace_back(x + w, y + h, z + 1, 2, texID, 2);
-					mesh.emplace_back(x, y + h, z + 1, 3, texID, 2);
+					mesh.emplace_back(x, y, z + 1, texID, 2);
+					mesh.emplace_back(x + w, y, z + 1, texID, 2);
+					mesh.emplace_back(x + w, y + h, z + 1, texID, 2);
+					mesh.emplace_back(x, y + h, z + 1, texID, 2);
 				}
 				if (faces[x][y][z] & rightMask)
 				{
 					uint w = 0;
-					for (uint tz = z; tz < CHUNK_Z && (faces[x][y][tz] & rightMask); ++tz)
+					for (uint tz = z; tz < CHUNK_Z && (faces[x][y][tz] & rightMask) && blocks[BLOCK_COORD(x, y, tz)].Texture == texID; ++tz)
 					{
 						faces[x][y][tz] &= ~rightMask;
 						++w;
 					}
 					uint h = 1;
-					for (uint ty = y + 1; ty < CHUNK_Y && (faces[x][ty][z] & rightMask); ++ty)
+					for (uint ty = y + 1; ty < CHUNK_Y && (faces[x][ty][z] & rightMask) && blocks[BLOCK_COORD(x, ty, z)].Texture == texID; ++ty)
 					{
 						uint tw = 0;
-						for (uint tz = z; tz < CHUNK_Z && (faces[x][ty][tz] & rightMask) && tw < w; ++tz)
+						for (uint tz = z; tz < CHUNK_Z && (faces[x][ty][tz] & rightMask) && blocks[BLOCK_COORD(x, ty, tz)].Texture == texID && tw < w; ++tz)
 							++tw;
 						if (tw >= w)
 						{
@@ -295,25 +312,24 @@ void Chunk::calculateGreedyMesh(const Chunk* left, const Chunk* right, const Chu
 						else
 							break;
 					}
-					uint texID = 1;
-					mesh.emplace_back(x, y, z, 0, texID, 1);
-					mesh.emplace_back(x, y, z + w, 1, texID, 1);
-					mesh.emplace_back(x, y + h, z + w, 2, texID, 1);
-					mesh.emplace_back(x, y + h, z, 3, texID, 1);
+					mesh.emplace_back(x, y, z, texID, 1);
+					mesh.emplace_back(x, y, z + w, texID, 1);
+					mesh.emplace_back(x, y + h, z + w, texID, 1);
+					mesh.emplace_back(x, y + h, z, texID, 1);
 				}
 				if (faces[x][y][z] & leftMask)
 				{
 					uint w = 0;
-					for (uint tz = z; tz < CHUNK_Z && (faces[x][y][tz] & leftMask); ++tz)
+					for (uint tz = z; tz < CHUNK_Z && (faces[x][y][tz] & leftMask) && blocks[BLOCK_COORD(x, y, tz)].Texture == texID; ++tz)
 					{
 						faces[x][y][tz] &= ~leftMask;
 						++w;
 					}
 					uint h = 1;
-					for (uint ty = y + 1; ty < CHUNK_Y && (faces[x][ty][z] & leftMask); ++ty)
+					for (uint ty = y + 1; ty < CHUNK_Y && (faces[x][ty][z] & leftMask) && blocks[BLOCK_COORD(x, ty, z)].Texture == texID; ++ty)
 					{
 						uint tw = 0;
-						for (uint tz = z; tz < CHUNK_Z && (faces[x][ty][tz] & leftMask) && tw < w; ++tz)
+						for (uint tz = z; tz < CHUNK_Z && (faces[x][ty][tz] & leftMask) && blocks[BLOCK_COORD(x, ty, tz)].Texture == texID && tw < w; ++tz)
 							++tw;
 						if (tw >= w)
 						{
@@ -324,11 +340,10 @@ void Chunk::calculateGreedyMesh(const Chunk* left, const Chunk* right, const Chu
 						else
 							break;
 					}
-					uint texID = 1;
-					mesh.emplace_back(x + 1, y, z + w, 0, texID, 1);
-					mesh.emplace_back(x + 1, y, z, 1, texID, 1);
-					mesh.emplace_back(x + 1, y + h, z, 2, texID, 1);
-					mesh.emplace_back(x + 1, y + h, z + w, 3, texID, 1);
+					mesh.emplace_back(x + 1, y, z + w, texID, 1);
+					mesh.emplace_back(x + 1, y, z, texID, 1);
+					mesh.emplace_back(x + 1, y + h, z, texID, 1);
+					mesh.emplace_back(x + 1, y + h, z + w, texID, 1);
 				}
 			}
 		}
@@ -338,9 +353,11 @@ void Chunk::calculateGreedyMesh(const Chunk* left, const Chunk* right, const Chu
 
 void Chunk::draw(VertexArray& va, const VertexBufferLayout& vbLayout, Shader& shader)
 {
+	if (mesh.size() == 0)
+		return;
 	VertexBuffer vb(mesh.data(), mesh.size() * sizeof(Vertex), GL_STATIC_DRAW);
 	va.addBuffer(vb, vbLayout);
-	shader.setUniform2i("chunkCoord", _x, _z);
+	shader.setUniform3i(_chunkCoordUniformName, _x, _y, _z);
 	vb.bind();
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glDrawElements(GL_TRIANGLES, mesh.size() / 4 * 6, GL_UNSIGNED_INT, nullptr);

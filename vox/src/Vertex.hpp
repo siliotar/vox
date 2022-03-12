@@ -2,8 +2,8 @@
 
 #include "glm/glm.hpp"
 
-/*  11     111111111     11     11111  111111111  11111 */
-/* light     texID    texCoord   posZ     posY    posX  */
+/* 000000   11     111111111    11111   11111   11111 */
+/*         light     texID      posZ    posY    posX  */
 
 struct Vertex
 {
@@ -13,14 +13,13 @@ struct Vertex
 
 	Vertex(uint32_t data) : data(data) {}
 
-	Vertex(uint8_t posX, uint16_t posY, uint8_t posZ, uint8_t texCoord, uint16_t texID, uint8_t light)
+	Vertex(uint8_t posX, uint16_t posY, uint8_t posZ, uint16_t texID, uint8_t light)
 		: data(0)
 	{
 		data |= posX & 0b11111;
-		data |= (posY & 0b111111111) << 5;
-		data |= (posZ & 0b11111) << 14;
-		data |= (texCoord & 0b11) << 19;
-		data |= (texID & 0b111111111) << 21;
-		data |= (light & 0b11) << 30;
+		data |= (posY & 0b11111) << 5;
+		data |= (posZ & 0b11111) << 10;
+		data |= (texID & 0b111111111) << 15;
+		data |= (light & 0b11) << 24;
 	}
 };

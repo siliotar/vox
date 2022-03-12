@@ -65,6 +65,7 @@ void	Renderer::drawMap(Map& map)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	int	playerChunkX = static_cast<int>(Camera::getPlayerPosition().x) / CHUNK_X;
+	int	playerChunkY = static_cast<int>(Camera::getPlayerPosition().y) / CHUNK_Y;
 	int	playerChunkZ = static_cast<int>(Camera::getPlayerPosition().z) / CHUNK_Z;
 	_renderer->_va.bind();
 	_renderer->_ib.bind();
@@ -72,20 +73,23 @@ void	Renderer::drawMap(Map& map)
 	_renderer->_voxelShader.bind();
 	_renderer->_voxelShader.setUniformMatrix4f("MVP", mvp);
 	_renderer->_voxelTextureAtlas.bind();
-	for (int z = playerChunkZ - RenderDistance; z <= playerChunkZ + RenderDistance; ++z)
+	float distance2 = (RenderDistance + 1) * (RenderDistance + 1);
+	for (int y = playerChunkY - RenderDistance; y <= playerChunkY + RenderDistance; ++y)
 	{
-		for (int x = playerChunkX - RenderDistance; x <= playerChunkX + RenderDistance; ++x)
+		for (int z = playerChunkZ - RenderDistance; z <= playerChunkZ + RenderDistance; ++z)
 		{
-			float distX = (float)playerChunkX - x;
-			float distZ = (float)playerChunkZ - z;
-			if (sqrt(distX * distX + distZ * distZ) > RenderDistance + 1)
-				continue;
-			const Chunk*	left = map.getChunk(x + 1, z);
-			const Chunk*	right = map.getChunk(x - 1, z);
-			const Chunk*	back = map.getChunk(x, z + 1);
-			const Chunk*	front = map.getChunk(x, z - 1);
-			map.getChunk(x, z)->calculateGreedyMesh(left, right, back, front);
-			map.getChunk(x, z)->draw(_renderer->_va, _renderer->_voxelvbLayout, _renderer->_voxelShader);
+			for (int x = playerChunkX - RenderDistance; x <= playerChunkX + RenderDistance; ++x)
+			{
+				if (y < 0 || y >= MaxChunkHeight)
+					continue;
+				float distX = (float)playerChunkX - x;
+				float distZ = (float)playerChunkZ - z;
+				if (distX * distX + distZ * distZ > distance2)
+					continue;
+				Chunk* tempChunk = map.getChunk(x, y, z);
+				tempChunk->calculateGreedyMesh(map);
+				tempChunk->draw(_renderer->_va, _renderer->_voxelvbLayout, _renderer->_voxelShader);
+			}
 		}
 	}
 }

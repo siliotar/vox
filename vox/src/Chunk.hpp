@@ -1,7 +1,7 @@
 #pragma once
 
 #define CHUNK_X 16
-#define CHUNK_Y 60
+#define CHUNK_Y 16
 #define CHUNK_Z 16
 
 #include "Block.hpp"
@@ -12,21 +12,25 @@
 #include "VertexBufferLayout.hpp"
 #include "Shader.hpp"
 
+class Map;
+
 class Chunk
 {
 private:
 	int	_x;
+	int	_y;
 	int	_z;
+	const std::string _chunkCoordUniformName = "chunkCoord";
 public:
 	Block*	blocks;
 	bool modified;
 	std::vector<Vertex> mesh;
-	Chunk(int startX, int startZ);
+	Chunk(int startX, int startY, int startZ);
 	~Chunk();
 	Chunk() = delete;
 	Chunk(Chunk& other) = delete;
 	void operator=(const Chunk& other) = delete;
-	void calculateMesh(const Chunk* left, const Chunk* right, const Chunk* back, const Chunk* front);
-	void calculateGreedyMesh(const Chunk* left, const Chunk* right, const Chunk* back, const Chunk* front);
+	void calculateMesh(Map& map);
+	void calculateGreedyMesh(Map& map);
 	void draw(VertexArray& va, const VertexBufferLayout& vbLayout, Shader& shader);
 };
