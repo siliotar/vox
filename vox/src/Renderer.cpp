@@ -8,29 +8,18 @@ Renderer* Renderer::_renderer = nullptr;
 
 Renderer::Renderer()
 	: _va(), _voxelvbLayout(),
-	_ib(nullptr, MaxIndexCount * sizeof(GLuint), GL_STATIC_DRAW),
+	_ib(nullptr, 6 * sizeof(GLuint), GL_STATIC_DRAW),
 	_voxelShader("res/shaders/Basic.vert", "res/shaders/Basic.frag"),
-	_voxelTextureAtlas("res/textures/atlas.png"), _model(1.0f), _indexCount(0)
+	_voxelTextureAtlas("res/textures/atlas.png")
 {
-	_voxelvbLayout.push<uint32_t>(1);
+	_voxelvbLayout.push<uint32_t>(2, 1);
 
-	_rectIndexBuffer = new GLuint[MaxIndexCount];
+	GLuint rectIndexBuffer[6] = {
+		0, 1, 2,
+		2, 3, 0
+	};
 
-	size_t offset = 0;
-	for (size_t i = 0; i < MaxIndexCount;)
-	{
-		_rectIndexBuffer[i + 0] = 0 + offset;
-		_rectIndexBuffer[i + 1] = 1 + offset;
-		_rectIndexBuffer[i + 2] = 2 + offset;
-		_rectIndexBuffer[i + 3] = 2 + offset;
-		_rectIndexBuffer[i + 4] = 3 + offset;
-		_rectIndexBuffer[i + 5] = 0 + offset;
-		i += 6;
-		offset += 4;
-	}
-
-	_ib.subData(_rectIndexBuffer, MaxIndexCount * sizeof(GLuint));
-	delete[] _rectIndexBuffer;
+	_ib.subData(rectIndexBuffer, 6 * sizeof(GLuint));
 
 	_voxelShader.bind();
 	_voxelTextureAtlas.bind();
@@ -69,22 +58,24 @@ void	Renderer::drawMap(Map& map)
 	int	playerChunkZ = static_cast<int>(Camera::getPlayerPosition().z) / CHUNK_Z;
 	_renderer->_va.bind();
 	_renderer->_ib.bind();
-	glm::mat4 mvp = Camera::getProjection() * Camera::getView() * _renderer->_model;
+	glm::mat4 mvp = Camera::getProjection() * Camera::getView();
 	_renderer->_voxelShader.bind();
-	_renderer->_voxelShader.setUniformMatrix4f("MVP", mvp);
+	_renderer->_voxelShader.setUniformMatrix4f(_renderer->_MVPUniformName, mvp);
 	_renderer->_voxelTextureAtlas.bind();
 	float distance2 = (RenderDistance + 1) * (RenderDistance + 1);
 	for (int y = playerChunkY - RenderDistance; y <= playerChunkY + RenderDistance; ++y)
 	{
 		for (int z = playerChunkZ - RenderDistance; z <= playerChunkZ + RenderDistance; ++z)
 		{
+			float distZ = (float)playerChunkZ - z;
+			float distZ2 = distZ * distZ;
 			for (int x = playerChunkX - RenderDistance; x <= playerChunkX + RenderDistance; ++x)
 			{
 				if (y < 0 || y >= MaxChunkHeight)
 					continue;
 				float distX = (float)playerChunkX - x;
-				float distZ = (float)playerChunkZ - z;
-				if (distX * distX + distZ * distZ > distance2)
+				float distX2 = distX * distX;
+				if (distX2 + distZ2 > distance2)
 					continue;
 				Chunk* tempChunk = map.getChunk(x, y, z);
 				tempChunk->calculateGreedyMesh(map);

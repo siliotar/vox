@@ -1,15 +1,11 @@
 #pragma once
 
-#include "OpenGL.hpp"
-#include "glm/glm.hpp"
 #include "Shader.hpp"
 #include "VertexBuffer.hpp"
 #include "IndexBuffer.hpp"
 #include "VertexArray.hpp"
 #include "Texture.hpp"
-#include "Chunk.hpp"
 #include "Map.hpp"
-#include "Vertex.hpp"
 
 class Renderer
 {
@@ -18,15 +14,10 @@ private:
 	VertexArray _va;
 	VertexBufferLayout _voxelvbLayout;
 	IndexBuffer _ib;
-	GLuint* _rectIndexBuffer = nullptr;
 	Shader _voxelShader;
 	Texture _voxelTextureAtlas;
-	uint _indexCount;
 
-	glm::mat4	_model;
-
-	static const size_t	MaxRectCount = CHUNK_X * CHUNK_Y * CHUNK_Z * 6 / 2;
-	static const size_t	MaxIndexCount = MaxRectCount * 6;
+	const std::string _MVPUniformName = "MVP";
 
 	Renderer();
 	~Renderer();

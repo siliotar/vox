@@ -8,6 +8,7 @@ struct VertexBufferElement
 	uint	type;
 	uint	count;
 	unsigned char	normalized;
+	uint	divisor;
 
 	static uint	getSizeOfType(uint type)
 	{
@@ -38,36 +39,36 @@ public:
 	void operator=(const VertexBufferLayout& other) = delete;
 
 	template <typename T>
-	void	push(uint count)
+	void	push(uint count, uint divisor = 0)
 	{
 		static_assert(false);
 	}
 
 	template <>
-	void	push<float>(uint count)
+	void	push<float>(uint count, uint divisor)
 	{
-		_elements.push_back({ GL_FLOAT, count, GL_FALSE });
+		_elements.push_back({ GL_FLOAT, count, GL_FALSE, divisor });
 		_stride += count * VertexBufferElement::getSizeOfType(GL_FLOAT);
 	}
 
 	template <>
-	void	push<uint>(uint count)
+	void	push<uint>(uint count, uint divisor)
 	{
-		_elements.push_back({ GL_UNSIGNED_INT, count, GL_FALSE });
+		_elements.push_back({ GL_UNSIGNED_INT, count, GL_FALSE, divisor });
 		_stride += count * VertexBufferElement::getSizeOfType(GL_UNSIGNED_INT);
 	}
 
 	template <>
-	void	push<int>(uint count)
+	void	push<int>(uint count, uint divisor)
 	{
-		_elements.push_back({ GL_INT, count, GL_FALSE });
+		_elements.push_back({ GL_INT, count, GL_FALSE, divisor });
 		_stride += count * VertexBufferElement::getSizeOfType(GL_INT);
 	}
 
 	template <>
-	void	push<unsigned char>(uint count)
+	void	push<unsigned char>(uint count, uint divisor)
 	{
-		_elements.push_back({ GL_UNSIGNED_BYTE, count, GL_TRUE });
+		_elements.push_back({ GL_UNSIGNED_BYTE, count, GL_TRUE, divisor });
 		_stride += count * VertexBufferElement::getSizeOfType(GL_UNSIGNED_BYTE);
 	}
 

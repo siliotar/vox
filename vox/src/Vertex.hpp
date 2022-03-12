@@ -5,21 +5,46 @@
 /* 000000   11     111111111    11111   11111   11111 */
 /*         light     texID      posZ    posY    posX  */
 
+/*  111    111111111  |   11      1111      1111      1111    11111   11111   11111 */
+/* Normal    texID    |  light   scaleZ    scaleY    scaleX   posZ    posY    posX  */
+
+struct VertexData
+{
+	uint32_t	x;
+	uint32_t	y;
+};
+
 struct Vertex
 {
-	uint32_t data;
+	VertexData data;
 
-	Vertex() : data(0) {}
+	Vertex() { memset(&data, 0, 4); }
 
-	Vertex(uint32_t data) : data(data) {}
-
-	Vertex(uint8_t posX, uint16_t posY, uint8_t posZ, uint16_t texID, uint8_t light)
-		: data(0)
+	/*Vertex(uint8_t posX, uint8_t posY, uint8_t posZ, uint16_t texID, uint8_t light)
 	{
-		data |= posX & 0b11111;
-		data |= (posY & 0b11111) << 5;
-		data |= (posZ & 0b11111) << 10;
-		data |= (texID & 0b111111111) << 15;
-		data |= (light & 0b11) << 24;
+		uint32_t tmp = 0;
+		tmp |= posX & 0b11111;
+		tmp |= (posY & 0b11111) << 5;
+		tmp |= (posZ & 0b11111) << 10;
+		tmp |= (texID & 0b111111111) << 15;
+		tmp |= (light & 0b11) << 24;
+		memcpy(&data, &tmp, 4);
+	}*/
+
+	Vertex(uint8_t posX, uint8_t posY, uint8_t posZ, uint16_t texID, uint8_t light, uint8_t scaleX, uint8_t scaleY, uint8_t scaleZ, uint8_t normal)
+	{
+		uint32_t tmp = 0;
+		tmp |= posX & 0b11111;
+		tmp |= (posY & 0b11111) << 5;
+		tmp |= (posZ & 0b11111) << 10;
+		tmp |= (scaleX & 0b11111) << 15;
+		tmp |= (scaleY & 0b11111) << 20;
+		tmp |= (scaleZ & 0b11111) << 25;
+		tmp |= (light & 0b11) << 30;
+		memcpy(&(data.x), &tmp, 4);
+		tmp = 0;
+		tmp |= texID & 0b111111111;
+		tmp |= (normal & 0b111) << 9;
+		memcpy(&(data.y), &tmp, 4);
 	}
 };

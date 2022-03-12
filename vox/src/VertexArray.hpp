@@ -16,6 +16,7 @@ public:
 	void operator=(const VertexArray& other) = delete;
 
 	void	addBuffer(const VertexBuffer& vb, const VertexBufferLayout& layout);
+	void	addBuffer(const VertexBuffer& vb, const VertexBuffer& instancevb, const VertexBufferLayout& layout);
 
 	void	bind() const;
 	void	unbind() const;

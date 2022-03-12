@@ -15,7 +15,7 @@ Chunk::Chunk(int startX, int startY, int startZ)
 
 	for (size_t ty = 0; ty < CHUNK_Y; ++ty)
 	{
-		float y = _y + (int)ty;
+		float y = float(_y + (int)ty);
 		for (size_t tz = 0; tz < CHUNK_Z; tz++)
 		{
 			float z = start + _z + (int)tz;
@@ -48,7 +48,7 @@ Chunk::~Chunk()
 
 void Chunk::calculateMesh(Map& map)
 {
-	if (!modified)
+	/*if (!modified)
 		return;
 	const Chunk* left = map.getChunk(_x / CHUNK_X + 1, _y / CHUNK_Y, _z / CHUNK_Z);
 	const Chunk* right = map.getChunk(_x / CHUNK_X - 1, _y / CHUNK_Y, _z / CHUNK_Z);
@@ -117,7 +117,7 @@ void Chunk::calculateMesh(Map& map)
 			}
 		}
 	}
-	modified = false;
+	modified = false;*/
 }
 
 void Chunk::calculateGreedyMesh(Map& map)
@@ -137,8 +137,7 @@ void Chunk::calculateGreedyMesh(Map& map)
 	char rightMask = 0b001000;
 	char backMask = 0b010000;
 	char downMask = 0b100000;
-	char faces[CHUNK_X][CHUNK_Y][CHUNK_Z];
-	memset(faces, 0, sizeof(faces));
+	char faces[CHUNK_X][CHUNK_Y][CHUNK_Z] = { 0 };
 	for (uint y = 0; y < CHUNK_Y; ++y)
 	{
 		for (uint z = 0; z < CHUNK_Z; z++)
@@ -200,10 +199,7 @@ void Chunk::calculateGreedyMesh(Map& map)
 						else
 							break;
 					}
-					mesh.emplace_back(x, y, z, texID, 0);
-					mesh.emplace_back(x + w, y, z, texID, 0);
-					mesh.emplace_back(x + w, y, z + h, texID, 0);
-					mesh.emplace_back(x, y, z + h, texID, 0);
+					mesh.emplace_back(x, y, z, texID, 0, w, 1, h, 5);
 				}
 				if (faces[x][y][z] & upMask)
 				{
@@ -228,10 +224,7 @@ void Chunk::calculateGreedyMesh(Map& map)
 						else
 							break;
 					}
-					mesh.emplace_back(x, y + 1, z + h, texID, 3);
-					mesh.emplace_back(x + w, y + 1, z + h, texID, 3);
-					mesh.emplace_back(x + w, y + 1, z, texID, 3);
-					mesh.emplace_back(x, y + 1, z, texID, 3);
+					mesh.emplace_back(x, y, z, texID, 3, w, 1, h, 0);
 				}
 				if (faces[x][y][z] & frontMask)
 				{
@@ -256,10 +249,7 @@ void Chunk::calculateGreedyMesh(Map& map)
 						else
 							break;
 					}
-					mesh.emplace_back(x + w, y, z, texID, 2);
-					mesh.emplace_back(x, y, z, texID, 2);
-					mesh.emplace_back(x, y + h, z, texID, 2);
-					mesh.emplace_back(x + w, y + h, z, texID, 2);
+					mesh.emplace_back(x, y, z, texID, 2, w, h, 1, 2);
 				}
 				if (faces[x][y][z] & backMask)
 				{
@@ -284,10 +274,7 @@ void Chunk::calculateGreedyMesh(Map& map)
 						else
 							break;
 					}
-					mesh.emplace_back(x, y, z + 1, texID, 2);
-					mesh.emplace_back(x + w, y, z + 1, texID, 2);
-					mesh.emplace_back(x + w, y + h, z + 1, texID, 2);
-					mesh.emplace_back(x, y + h, z + 1, texID, 2);
+					mesh.emplace_back(x, y, z, texID, 2, w, h, 1, 4);
 				}
 				if (faces[x][y][z] & rightMask)
 				{
@@ -312,10 +299,7 @@ void Chunk::calculateGreedyMesh(Map& map)
 						else
 							break;
 					}
-					mesh.emplace_back(x, y, z, texID, 1);
-					mesh.emplace_back(x, y, z + w, texID, 1);
-					mesh.emplace_back(x, y + h, z + w, texID, 1);
-					mesh.emplace_back(x, y + h, z, texID, 1);
+					mesh.emplace_back(x, y, z, texID, 1, 1, h, w, 3);
 				}
 				if (faces[x][y][z] & leftMask)
 				{
@@ -340,10 +324,7 @@ void Chunk::calculateGreedyMesh(Map& map)
 						else
 							break;
 					}
-					mesh.emplace_back(x + 1, y, z + w, texID, 1);
-					mesh.emplace_back(x + 1, y, z, texID, 1);
-					mesh.emplace_back(x + 1, y + h, z, texID, 1);
-					mesh.emplace_back(x + 1, y + h, z + w, texID, 1);
+					mesh.emplace_back(x, y, z, texID, 1, 1, h, w, 1);
 				}
 			}
 		}
@@ -353,13 +334,14 @@ void Chunk::calculateGreedyMesh(Map& map)
 
 void Chunk::draw(VertexArray& va, const VertexBufferLayout& vbLayout, Shader& shader)
 {
-	if (mesh.size() == 0)
+	size_t meshSize = mesh.size();
+	if (meshSize == 0)
 		return;
-	VertexBuffer vb(mesh.data(), mesh.size() * sizeof(Vertex), GL_STATIC_DRAW);
+	VertexBuffer vb(mesh.data(), meshSize * sizeof(Vertex), GL_STATIC_DRAW);
 	va.addBuffer(vb, vbLayout);
 	shader.setUniform3i(_chunkCoordUniformName, _x, _y, _z);
 	vb.bind();
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	glDrawElements(GL_TRIANGLES, mesh.size() / 4 * 6, GL_UNSIGNED_INT, nullptr);
+	glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr, meshSize);
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
