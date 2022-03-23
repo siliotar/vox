@@ -21,6 +21,8 @@ private:
 	int	_y;
 	int	_z;
 	const std::string _chunkCoordUniformName = "chunkCoord";
+
+	VertexBuffer* _vb;
 public:
 	Block*	blocks;
 	bool modified;

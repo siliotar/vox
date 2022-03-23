@@ -7,7 +7,7 @@
 #define BLOCK_COORD(x, y, z) x + z * CHUNK_X + y * CHUNK_X * CHUNK_Z
 
 Chunk::Chunk(int startX, int startY, int startZ)
-	: _x(startX), _y(startY), _z(startZ), blocks(nullptr), modified(true)
+	: _x(startX), _y(startY), _z(startZ), blocks(nullptr), modified(true), _vb(nullptr)
 {
 	blocks = new Block[CHUNK_X * CHUNK_Y * CHUNK_Z];
 
@@ -44,6 +44,7 @@ Chunk::Chunk(int startX, int startY, int startZ)
 Chunk::~Chunk()
 {
 	delete[] blocks;
+	delete _vb;
 }
 
 void Chunk::calculateMesh(Map& map)
@@ -329,6 +330,8 @@ void Chunk::calculateGreedyMesh(Map& map)
 			}
 		}
 	}
+	delete _vb;
+	_vb = nullptr;
 	modified = false;
 }
 
@@ -337,10 +340,11 @@ void Chunk::draw(VertexArray& va, const VertexBufferLayout& vbLayout, Shader& sh
 	size_t meshSize = mesh.size();
 	if (meshSize == 0)
 		return;
-	VertexBuffer vb(mesh.data(), meshSize * sizeof(Vertex), GL_STATIC_DRAW);
-	va.addBuffer(vb, vbLayout);
+	if (_vb == nullptr)
+		_vb = new VertexBuffer(mesh.data(), meshSize * sizeof(Vertex), GL_STATIC_DRAW);
+	va.addBuffer(*_vb, vbLayout);
 	shader.setUniform3i(_chunkCoordUniformName, _x, _y, _z);
-	vb.bind();
+	_vb->bind();
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr, meshSize);
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

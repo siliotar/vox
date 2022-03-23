@@ -8,14 +8,20 @@ Map::Map()
 	int	playerChunkY = static_cast<int>(Camera::getPlayerPosition().y) / CHUNK_Y;
 	int	playerChunkZ = static_cast<int>(Camera::getPlayerPosition().z) / CHUNK_Z;
 	for (int y = playerChunkY - RenderDistance; y <= playerChunkY + RenderDistance; ++y)
+	{
+		if (y < 0 || y >= MaxChunkHeight)
+			continue;
+		int yPos = y * 4 * MaxChunkWidth * MaxChunkWidth;
 		for (int z = playerChunkZ - RenderDistance; z <= playerChunkZ + RenderDistance; ++z)
+		{
+			int zPos = (z + MaxChunkWidth) * MaxChunkWidth;
 			for (int x = playerChunkX - RenderDistance; x <= playerChunkX + RenderDistance; ++x)
 			{
-				if (y < 0 || y >= MaxChunkHeight)
-					continue;
-				int pos = (x + MaxChunkWidth) + (z + MaxChunkWidth) * MaxChunkWidth + y * 4 * MaxChunkWidth * MaxChunkWidth;
+				int pos = (x + MaxChunkWidth) + zPos + yPos;
 				_map.try_emplace(pos, x * CHUNK_X, y * CHUNK_Y, z * CHUNK_Z);
 			}
+		}
+	}
 }
 
 Map::~Map()
@@ -27,7 +33,7 @@ Chunk* Map::getChunk(int x, int y, int z)
 		return nullptr;
 	int pos = (x + MaxChunkWidth) + (z + MaxChunkWidth) * MaxChunkWidth + y * 4 * MaxChunkWidth * MaxChunkWidth;
 	if (_map.count(pos) == 0)
-		_map.try_emplace(pos, x * CHUNK_X, y * CHUNK_Y, z * CHUNK_Z);
+		return &(_map.try_emplace(pos, x * CHUNK_X, y * CHUNK_Y, z * CHUNK_Z).first->second);
 	return &_map.at(pos);
 }
 

@@ -63,16 +63,22 @@ void	Renderer::drawMap(Map& map)
 	_renderer->_voxelShader.setUniformMatrix4f(_renderer->_MVPUniformName, mvp);
 	_renderer->_voxelTextureAtlas.bind();
 	float distance2 = (RenderDistance + 1) * (RenderDistance + 1);
-	for (int y = playerChunkY - RenderDistance; y <= playerChunkY + RenderDistance; ++y)
+	int maxX = playerChunkX + RenderDistance;
+	int maxY = playerChunkY + RenderDistance;
+	int maxZ = playerChunkZ + RenderDistance;
+	int startY = playerChunkY - RenderDistance;
+	if (startY < 0)
+		startY = 0;
+	if (maxY >= MaxChunkHeight)
+		maxY = MaxChunkHeight - 1;
+	for (int y = startY; y <= maxY; ++y)
 	{
-		for (int z = playerChunkZ - RenderDistance; z <= playerChunkZ + RenderDistance; ++z)
+		for (int z = playerChunkZ - RenderDistance; z <= maxZ; ++z)
 		{
 			float distZ = (float)playerChunkZ - z;
 			float distZ2 = distZ * distZ;
-			for (int x = playerChunkX - RenderDistance; x <= playerChunkX + RenderDistance; ++x)
+			for (int x = playerChunkX - RenderDistance; x <= maxX; ++x)
 			{
-				if (y < 0 || y >= MaxChunkHeight)
-					continue;
 				float distX = (float)playerChunkX - x;
 				float distX2 = distX * distX;
 				if (distX2 + distZ2 > distance2)
