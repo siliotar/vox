@@ -65,5 +65,4 @@ void Map::setBlock(int x, int y, int z, uint id)
 	if (zInChunk < 0)
 		zInChunk = CHUNK_Z + zInChunk;
 	_map.at(pos).blocks[xInChunk + zInChunk * CHUNK_X + yInChunk * CHUNK_X * CHUNK_Z].ID = id;
-	_map.at(pos).blocks[xInChunk + zInChunk * CHUNK_X + yInChunk * CHUNK_X * CHUNK_Z].Texture = id; // Temp
 }

@@ -12,8 +12,10 @@ float textureSize = 32.0f / 512.0f;
 
 void main()
 {
-	vec2 texCoords = vec2(v_TexCoordStart.x + textureSize * fract(v_TexCoord.x), v_TexCoordStart.y + textureSize * fract(v_TexCoord.y));
-	vec4 tex = texture(u_Texture, texCoords);
+	vec2 ddx = dFdx(v_TexCoordStart + textureSize * v_TexCoord);
+	vec2 ddy = dFdy(v_TexCoordStart + textureSize * v_TexCoord);
+	vec2 texCoords = v_TexCoordStart + textureSize * fract(v_TexCoord);
+	vec4 tex = textureGrad(u_Texture, texCoords, ddx, ddy);
 	vec3 color = vec3(v_Light * tex);
 	FragColor = vec4(color, tex.w);
 }

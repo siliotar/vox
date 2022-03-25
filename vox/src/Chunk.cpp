@@ -35,7 +35,6 @@ Chunk::Chunk(int startX, int startY, int startZ)
 					blocks[BLOCK_COORD(tx, ty, tz)].ID = 1;
 				else
 					blocks[BLOCK_COORD(tx, ty, tz)].ID = 2;
-				blocks[BLOCK_COORD(tx, ty, tz)].Texture = blocks[BLOCK_COORD(tx, ty, tz)].ID;
 			}
 		}
 	}
@@ -176,20 +175,20 @@ void Chunk::calculateGreedyMesh(Map& map)
 			{
 				if (faces[x][y][z] == 0)
 					continue;
-				uint texID = blocks[BLOCK_COORD(x, y, z)].Texture;
+				uint texID = blocks[BLOCK_COORD(x, y, z)].ID;
 				if (faces[x][y][z] & downMask)
 				{
 					uint w = 0;
-					for (uint tx = x; tx < CHUNK_X && (faces[tx][y][z] & downMask) && blocks[BLOCK_COORD(tx, y, z)].Texture == texID; ++tx)
+					for (uint tx = x; tx < CHUNK_X && (faces[tx][y][z] & downMask) && blocks[BLOCK_COORD(tx, y, z)].ID == texID; ++tx)
 					{
 						faces[tx][y][z] &= ~downMask;
 						++w;
 					}
 					uint h = 1;
-					for (uint tz = z + 1; tz < CHUNK_Z && (faces[x][y][tz] & downMask) && blocks[BLOCK_COORD(x, y, tz)].Texture == texID; ++tz)
+					for (uint tz = z + 1; tz < CHUNK_Z && (faces[x][y][tz] & downMask) && blocks[BLOCK_COORD(x, y, tz)].ID == texID; ++tz)
 					{
 						uint tw = 0;
-						for (uint tx = x; tx < CHUNK_X && (faces[tx][y][tz] & downMask) && blocks[BLOCK_COORD(tx, y, tz)].Texture == texID && tw < w; ++tx)
+						for (uint tx = x; tx < CHUNK_X && (faces[tx][y][tz] & downMask) && blocks[BLOCK_COORD(tx, y, tz)].ID == texID && tw < w; ++tx)
 							++tw;
 						if (tw >= w)
 						{
@@ -205,16 +204,16 @@ void Chunk::calculateGreedyMesh(Map& map)
 				if (faces[x][y][z] & upMask)
 				{
 					uint w = 0;
-					for (uint tx = x; tx < CHUNK_X && (faces[tx][y][z] & upMask) && blocks[BLOCK_COORD(tx, y, z)].Texture == texID; ++tx)
+					for (uint tx = x; tx < CHUNK_X && (faces[tx][y][z] & upMask) && blocks[BLOCK_COORD(tx, y, z)].ID == texID; ++tx)
 					{
 						faces[tx][y][z] &= ~upMask;
 						++w;
 					}
 					uint h = 1;
-					for (uint tz = z + 1; tz < CHUNK_Z && (faces[x][y][tz] & upMask) && blocks[BLOCK_COORD(x, y, tz)].Texture == texID; ++tz)
+					for (uint tz = z + 1; tz < CHUNK_Z && (faces[x][y][tz] & upMask) && blocks[BLOCK_COORD(x, y, tz)].ID == texID; ++tz)
 					{
 						uint tw = 0;
-						for (uint tx = x; tx < CHUNK_X && (faces[tx][y][tz] & upMask) && blocks[BLOCK_COORD(tx, y, tz)].Texture == texID && tw < w; ++tx)
+						for (uint tx = x; tx < CHUNK_X && (faces[tx][y][tz] & upMask) && blocks[BLOCK_COORD(tx, y, tz)].ID == texID && tw < w; ++tx)
 							++tw;
 						if (tw >= w)
 						{
@@ -230,16 +229,16 @@ void Chunk::calculateGreedyMesh(Map& map)
 				if (faces[x][y][z] & frontMask)
 				{
 					uint w = 0;
-					for (uint tx = x; tx < CHUNK_X && (faces[tx][y][z] & frontMask) && blocks[BLOCK_COORD(tx, y, z)].Texture == texID; ++tx)
+					for (uint tx = x; tx < CHUNK_X && (faces[tx][y][z] & frontMask) && blocks[BLOCK_COORD(tx, y, z)].ID == texID; ++tx)
 					{
 						faces[tx][y][z] &= ~frontMask;
 						++w;
 					}
 					uint h = 1;
-					for (uint ty = y + 1; ty < CHUNK_Y && (faces[x][ty][z] & frontMask) && blocks[BLOCK_COORD(x, ty, z)].Texture == texID; ++ty)
+					for (uint ty = y + 1; ty < CHUNK_Y && (faces[x][ty][z] & frontMask) && blocks[BLOCK_COORD(x, ty, z)].ID == texID; ++ty)
 					{
 						uint tw = 0;
-						for (uint tx = x; tx < CHUNK_X && (faces[tx][ty][z] & frontMask) && blocks[BLOCK_COORD(tx, ty, z)].Texture == texID && tw < w; ++tx)
+						for (uint tx = x; tx < CHUNK_X && (faces[tx][ty][z] & frontMask) && blocks[BLOCK_COORD(tx, ty, z)].ID == texID && tw < w; ++tx)
 							++tw;
 						if (tw >= w)
 						{
@@ -255,16 +254,16 @@ void Chunk::calculateGreedyMesh(Map& map)
 				if (faces[x][y][z] & backMask)
 				{
 					uint w = 0;
-					for (uint tx = x; tx < CHUNK_X && (faces[tx][y][z] & backMask) && blocks[BLOCK_COORD(tx, y, z)].Texture == texID; ++tx)
+					for (uint tx = x; tx < CHUNK_X && (faces[tx][y][z] & backMask) && blocks[BLOCK_COORD(tx, y, z)].ID == texID; ++tx)
 					{
 						faces[tx][y][z] &= ~backMask;
 						++w;
 					}
 					uint h = 1;
-					for (uint ty = y + 1; ty < CHUNK_Y && (faces[x][ty][z] & backMask) && blocks[BLOCK_COORD(x, ty, z)].Texture == texID; ++ty)
+					for (uint ty = y + 1; ty < CHUNK_Y && (faces[x][ty][z] & backMask) && blocks[BLOCK_COORD(x, ty, z)].ID == texID; ++ty)
 					{
 						uint tw = 0;
-						for (uint tx = x; tx < CHUNK_X && (faces[tx][ty][z] & backMask) && blocks[BLOCK_COORD(tx, ty, z)].Texture == texID && tw < w; ++tx)
+						for (uint tx = x; tx < CHUNK_X && (faces[tx][ty][z] & backMask) && blocks[BLOCK_COORD(tx, ty, z)].ID == texID && tw < w; ++tx)
 							++tw;
 						if (tw >= w)
 						{
@@ -280,16 +279,16 @@ void Chunk::calculateGreedyMesh(Map& map)
 				if (faces[x][y][z] & rightMask)
 				{
 					uint w = 0;
-					for (uint tz = z; tz < CHUNK_Z && (faces[x][y][tz] & rightMask) && blocks[BLOCK_COORD(x, y, tz)].Texture == texID; ++tz)
+					for (uint tz = z; tz < CHUNK_Z && (faces[x][y][tz] & rightMask) && blocks[BLOCK_COORD(x, y, tz)].ID == texID; ++tz)
 					{
 						faces[x][y][tz] &= ~rightMask;
 						++w;
 					}
 					uint h = 1;
-					for (uint ty = y + 1; ty < CHUNK_Y && (faces[x][ty][z] & rightMask) && blocks[BLOCK_COORD(x, ty, z)].Texture == texID; ++ty)
+					for (uint ty = y + 1; ty < CHUNK_Y && (faces[x][ty][z] & rightMask) && blocks[BLOCK_COORD(x, ty, z)].ID == texID; ++ty)
 					{
 						uint tw = 0;
-						for (uint tz = z; tz < CHUNK_Z && (faces[x][ty][tz] & rightMask) && blocks[BLOCK_COORD(x, ty, tz)].Texture == texID && tw < w; ++tz)
+						for (uint tz = z; tz < CHUNK_Z && (faces[x][ty][tz] & rightMask) && blocks[BLOCK_COORD(x, ty, tz)].ID == texID && tw < w; ++tz)
 							++tw;
 						if (tw >= w)
 						{
@@ -305,16 +304,16 @@ void Chunk::calculateGreedyMesh(Map& map)
 				if (faces[x][y][z] & leftMask)
 				{
 					uint w = 0;
-					for (uint tz = z; tz < CHUNK_Z && (faces[x][y][tz] & leftMask) && blocks[BLOCK_COORD(x, y, tz)].Texture == texID; ++tz)
+					for (uint tz = z; tz < CHUNK_Z && (faces[x][y][tz] & leftMask) && blocks[BLOCK_COORD(x, y, tz)].ID == texID; ++tz)
 					{
 						faces[x][y][tz] &= ~leftMask;
 						++w;
 					}
 					uint h = 1;
-					for (uint ty = y + 1; ty < CHUNK_Y && (faces[x][ty][z] & leftMask) && blocks[BLOCK_COORD(x, ty, z)].Texture == texID; ++ty)
+					for (uint ty = y + 1; ty < CHUNK_Y && (faces[x][ty][z] & leftMask) && blocks[BLOCK_COORD(x, ty, z)].ID == texID; ++ty)
 					{
 						uint tw = 0;
-						for (uint tz = z; tz < CHUNK_Z && (faces[x][ty][tz] & leftMask) && blocks[BLOCK_COORD(x, ty, tz)].Texture == texID && tw < w; ++tz)
+						for (uint tz = z; tz < CHUNK_Z && (faces[x][ty][tz] & leftMask) && blocks[BLOCK_COORD(x, ty, tz)].ID == texID && tw < w; ++tz)
 							++tw;
 						if (tw >= w)
 						{

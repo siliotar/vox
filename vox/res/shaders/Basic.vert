@@ -61,11 +61,11 @@ uint atlasYSize = 16u;
 vec2 getTextureScale(uint normal, uint scaleX, uint scaleY, uint scaleZ)
 {
 	float x, y;
-	if (normal == 0 || normal == 2 || normal == 4 || normal == 5)
+	if (normal == 0u || normal == 2u || normal == 4u || normal == 5u)
 		x = scaleX;
 	else
 		x = scaleZ;
-	if (normal > 0 && normal < 5)
+	if (normal > 0u && normal < 5u)
 		y = scaleY;
 	else
 		y = scaleZ;
@@ -87,7 +87,7 @@ void main()
 	uint texID = vertexData.y & 0x1ffu;
 	uint normal = (vertexData.y >> 9u) & 0x7u;
 
-	vec3 position = positions[normal * 4u + gl_VertexID % 4];
+	vec3 position = positions[int(normal * 4u) + gl_VertexID % 4];
 	float worldPosX = float(chunkCoord.x) + float(posX) + float(scaleX) * position.x;
 	float worldPosY = float(chunkCoord.y) + float(posY) + float(scaleY) * position.y - 1.5f;
 	float worldPosZ = float(chunkCoord.z) + float(posZ) + float(scaleZ) * position.z;

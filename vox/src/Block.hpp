@@ -7,5 +7,4 @@ typedef unsigned int uint;
 struct Block
 {
 	ubyte	ID;
-	ubyte	Texture;
 };
