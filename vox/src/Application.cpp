@@ -12,7 +12,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "Settings.hpp"
 #include "UI.hpp"
-#include <bitset>
+
 void hello(float)
 {
 	std::cout << "Hello! :)" << std::endl;

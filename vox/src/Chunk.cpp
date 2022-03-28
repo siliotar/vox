@@ -3,6 +3,8 @@
 #include "Map.hpp"
 #include <cmath>
 #include <iostream>
+#include <glm/gtc/noise.hpp>
+#include <PerlinNoise.hpp>
 
 #define BLOCK_COORD(x, y, z) x + z * CHUNK_X + y * CHUNK_X * CHUNK_Z
 
@@ -19,7 +21,7 @@ Chunk::Chunk(int startX, int startY, int startZ)
 		for (size_t tz = 0; tz < CHUNK_Z; tz++)
 		{
 			float z = start + _z + (int)tz;
-			float zsin = sin(z * 0.1f);
+			//float zsin = sin(z * 0.1f);
 			for (size_t tx = 0; tx < CHUNK_X; tx++)
 			{
 				//float xDist = float(_x + (int)tx) * 0.3f;
@@ -28,8 +30,9 @@ Chunk::Chunk(int startX, int startY, int startZ)
 				float x = start + _x + (int)tx;
 				//if (ty > cos(dist) * 4.0f + 20.0f)
 				//if (ty > ((cos(abs(_x + (int)tx) * 0.1f) * 6.0f + 22.0f)) || ty > ((cos(abs(_z + (int)tz) * 0.1f) * 6.0f + 22.0f)))
-				if (y > (((cos(x * 0.1f) + zsin) * 6.0f + 16.0f)))
-				//if (y > 10)
+				//if (y > (((cos(x * 0.1f) + zsin) * 6.0f + 16.0f)))
+				float value = perlinNoise(1337, x / 128.0f, z / 128.0f) * 64.0f + 64.0f;
+				if (y > value)
 					blocks[BLOCK_COORD(tx, ty, tz)].ID = 0;
 				else if (y < 7)
 					blocks[BLOCK_COORD(tx, ty, tz)].ID = 1;

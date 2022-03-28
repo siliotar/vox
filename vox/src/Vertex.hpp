@@ -18,7 +18,7 @@ struct Vertex
 {
 	VertexData data;
 
-	Vertex() { memset(&data, 0, 4); }
+	Vertex() { memset(&data, 0, sizeof(VertexData)); }
 
 	/*Vertex(uint8_t posX, uint8_t posY, uint8_t posZ, uint16_t texID, uint8_t light)
 	{
