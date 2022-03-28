@@ -13,31 +13,33 @@ Chunk::Chunk(int startX, int startY, int startZ)
 {
 	blocks = new Block[CHUNK_X * CHUNK_Y * CHUNK_Z];
 
-	float start = -MaxChunkWidth * CHUNK_X;
+	int start = -MaxChunkWidth * CHUNK_X;
 
-	for (size_t ty = 0; ty < CHUNK_Y; ++ty)
+	int seed = 1337;
+
+	int noise[CHUNK_X * CHUNK_Z];
+	int worldStartX = start + _x;
+	int worldStartZ = start + _z;
+	float scale = 1.0f / 128.0f;
+
+	for (int tz = 0; tz < CHUNK_Z; ++tz)
+		for (int tx = 0; tx < CHUNK_X; ++tx)
+			noise[tx + tz * CHUNK_X] = perlinNoise(seed, float(worldStartX + tx) * scale, float(worldStartZ + tz) * scale) * 64.0f + 64.0f;
+
+	for (int ty = 0; ty < CHUNK_Y; ++ty)
 	{
-		float y = float(_y + (int)ty);
-		for (size_t tz = 0; tz < CHUNK_Z; tz++)
+		int y = _y + ty;
+		for (int tz = 0; tz < CHUNK_Z; tz++)
 		{
-			float z = start + _z + (int)tz;
-			//float zsin = sin(z * 0.1f);
-			for (size_t tx = 0; tx < CHUNK_X; tx++)
+			for (int tx = 0; tx < CHUNK_X; tx++)
 			{
-				//float xDist = float(_x + (int)tx) * 0.3f;
-				//float zDist = float(_z + (int)tz) * 0.3f;
-				//float dist = sqrtf(xDist * xDist + zDist * zDist);
-				float x = start + _x + (int)tx;
-				//if (ty > cos(dist) * 4.0f + 20.0f)
-				//if (ty > ((cos(abs(_x + (int)tx) * 0.1f) * 6.0f + 22.0f)) || ty > ((cos(abs(_z + (int)tz) * 0.1f) * 6.0f + 22.0f)))
-				//if (y > (((cos(x * 0.1f) + zsin) * 6.0f + 16.0f)))
-				float value = perlinNoise(1337, x / 128.0f, z / 128.0f) * 64.0f + 64.0f;
+				int value = noise[tx + tz * CHUNK_X];
 				if (y > value)
 					blocks[BLOCK_COORD(tx, ty, tz)].ID = 0;
-				else if (y < 7)
-					blocks[BLOCK_COORD(tx, ty, tz)].ID = 1;
-				else
+				else if (y + 1 > value)
 					blocks[BLOCK_COORD(tx, ty, tz)].ID = 2;
+				else
+					blocks[BLOCK_COORD(tx, ty, tz)].ID = 1;
 			}
 		}
 	}
