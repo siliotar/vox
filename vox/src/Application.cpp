@@ -13,6 +13,8 @@
 #include "Settings.hpp"
 #include "UI.hpp"
 
+#include "jsonParser/JSONParser.hpp"
+
 void hello(float)
 {
 	std::cout << "Hello! :)" << std::endl;
@@ -20,6 +22,18 @@ void hello(float)
 
 int main(void)
 {
+	JSONParser parser("res/assets/models/block/grass_block.json");
+	try
+	{
+		parser.parse();
+	}
+	catch (const std::exception& e)
+	{
+		std::cout << e.what() << std::endl;
+		return EXIT_FAILURE;
+	}
+	parser.print();
+
 	Window::init(1366, 768, "vox");
 
 	FrameBufferSpecification fbSpec;

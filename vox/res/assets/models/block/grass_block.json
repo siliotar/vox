@@ -1,0 +1,17 @@
+{
+  "textures":
+  {
+    "bottom": "block/dirt",
+    "top":    "block/grass_block_top",
+    "side":   "block/grass_block_side"
+  },
+  "faces":
+  {
+    "down":  "#bottom",
+    "up":    "#top",
+    "north": "#side",
+    "south": "#side",
+    "west":  "#side",
+    "east":  "#side"
+  }
+}

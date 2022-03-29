@@ -24,7 +24,7 @@ Chunk::Chunk(int startX, int startY, int startZ)
 
 	for (int tz = 0; tz < CHUNK_Z; ++tz)
 		for (int tx = 0; tx < CHUNK_X; ++tx)
-			noise[tx + tz * CHUNK_X] = perlinNoise(seed, float(worldStartX + tx) * scale, float(worldStartZ + tz) * scale) * 64.0f + 64.0f;
+			noise[tx + tz * CHUNK_X] = int(perlinNoise(seed, float(worldStartX + tx) * scale, float(worldStartZ + tz) * scale) * 64.0f + 64.0f);
 
 	for (int ty = 0; ty < CHUNK_Y; ++ty)
 	{
