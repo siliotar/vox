@@ -21,10 +21,18 @@ private:
 	int	_y;
 	int	_z;
 	const std::string _chunkCoordUniformName = "chunkCoord";
+	int _chunkCoordUniformLocation;
+
+	const Chunk* _leftChunk;
+	const Chunk* _rightChunk;
+	const Chunk* _backChunk;
+	const Chunk* _frontChunk;
+	const Chunk* _upChunk;
+	const Chunk* _downChunk;
 
 	VertexBuffer* _vb;
 public:
-	Block*	blocks;
+	Block* blocks;
 	bool modified;
 	std::vector<Vertex> mesh;
 	Chunk(int startX, int startY, int startZ);

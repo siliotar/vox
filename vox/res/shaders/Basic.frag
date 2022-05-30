@@ -8,7 +8,7 @@ in float v_Light;
 
 uniform sampler2D u_Texture;
 
-float textureSize = 32.0f / 512.0f;
+const float textureSize = 32.0f / 512.0f;
 
 void main()
 {

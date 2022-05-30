@@ -32,17 +32,19 @@ Chunk* Map::getChunk(int x, int y, int z)
 	if (y < 0 || y >= MaxChunkHeight)
 		return nullptr;
 	int pos = (x + MaxChunkWidth) + (z + MaxChunkWidth) * MaxChunkWidth + y * 4 * MaxChunkWidth * MaxChunkWidth;
-	if (_map.count(pos) == 0)
+	std::unordered_map<int, Chunk>::iterator it = _map.find(pos);
+	if (it == _map.end())
 		return &(_map.try_emplace(pos, x * CHUNK_X, y * CHUNK_Y, z * CHUNK_Z).first->second);
-	return &_map.at(pos);
+	return &it->second;
 }
 
 const Chunk* Map::getChunk(int x, int y, int z) const
 {
 	int pos = (x + MaxChunkWidth) + (z + MaxChunkWidth) * MaxChunkWidth + y * 4 * MaxChunkWidth * MaxChunkWidth;
-	if (y < 0 || y >= MaxChunkHeight || _map.find(pos) == _map.end())
+	std::unordered_map<int, Chunk>::const_iterator it = _map.find(pos);
+	if (y < 0 || y >= MaxChunkHeight || it == _map.end())
 		return nullptr;
-	return &_map.at(pos);
+	return &it->second;
 }
 
 void Map::setBlock(int x, int y, int z, uint id)
