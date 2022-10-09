@@ -84,22 +84,22 @@ void Chunk::calculateGreedyMesh(Map& map)
 			{
 				if (blocks[BLOCK_COORD(x, y, z)].ID == 0)
 					continue;
-				if (y == 0 && (!_downChunk || _downChunk->blocks[BLOCK_COORD(x, (CHUNK_Y - 1), z)].ID == 0) \
+				if (y == 0 && (_downChunk && _downChunk->blocks[BLOCK_COORD(x, (CHUNK_Y - 1), z)].ID == 0) \
 					|| (y != 0 && blocks[BLOCK_COORD(x, (y - 1), z)].ID == 0))
 					faces[x][y][z] |= downMask;
-				if (y == (CHUNK_Y - 1) && (!_upChunk || _upChunk->blocks[BLOCK_COORD(x, 0, z)].ID == 0) \
+				if (y == (CHUNK_Y - 1) && (_upChunk && _upChunk->blocks[BLOCK_COORD(x, 0, z)].ID == 0) \
 					|| (y != (CHUNK_Y - 1) && blocks[BLOCK_COORD(x, (y + 1), z)].ID == 0))
 					faces[x][y][z] |= upMask;
-				if ((z == 0 && (!_frontChunk || _frontChunk->blocks[BLOCK_COORD(x, y, (CHUNK_Z - 1))].ID == 0)) \
+				if ((z == 0 && (_frontChunk && _frontChunk->blocks[BLOCK_COORD(x, y, (CHUNK_Z - 1))].ID == 0)) \
 					|| (z != 0 && blocks[BLOCK_COORD(x, y, (z - 1))].ID == 0))
 					faces[x][y][z] |= frontMask;
-				if ((z == (CHUNK_Z - 1) && (!_backChunk || _backChunk->blocks[BLOCK_COORD(x, y, 0)].ID == 0)) \
+				if ((z == (CHUNK_Z - 1) && (_backChunk && _backChunk->blocks[BLOCK_COORD(x, y, 0)].ID == 0)) \
 					|| (z != (CHUNK_Z - 1) && blocks[BLOCK_COORD(x, y, (z + 1))].ID == 0))
 					faces[x][y][z] |= backMask;
-				if ((x == 0 && (!_rightChunk || _rightChunk->blocks[BLOCK_COORD((CHUNK_X - 1), y, z)].ID == 0)) \
+				if ((x == 0 && (_rightChunk && _rightChunk->blocks[BLOCK_COORD((CHUNK_X - 1), y, z)].ID == 0)) \
 					|| (x != 0 && blocks[BLOCK_COORD((x - 1), y, z)].ID == 0))
 					faces[x][y][z] |= rightMask;
-				if ((x == (CHUNK_X - 1) && (!_leftChunk || _leftChunk->blocks[BLOCK_COORD(0, y, z)].ID == 0)) \
+				if ((x == (CHUNK_X - 1) && (_leftChunk && _leftChunk->blocks[BLOCK_COORD(0, y, z)].ID == 0)) \
 					|| (x != (CHUNK_X - 1) && blocks[BLOCK_COORD((x + 1), y, z)].ID == 0))
 					faces[x][y][z] |= leftMask;
 			}
@@ -287,4 +287,20 @@ void Chunk::draw(VertexArray& va, const VertexBufferLayout& vbLayout, Shader& sh
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr, meshSize);
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+}
+
+glm::ivec3 Chunk::getPosition() const
+{
+	return { _x, _y, _z };
+}
+
+void Chunk::updateNeighbors()
+{
+	_leftChunk = nullptr;
+	_rightChunk = nullptr;
+	_backChunk = nullptr;
+	_frontChunk = nullptr;
+	_upChunk = nullptr;
+	_downChunk = nullptr;
+	modified = true;
 }

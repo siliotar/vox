@@ -8,5 +8,5 @@
 #define MaxChunkWidth 1024
 #define MaxChunkHeight 16
 #define MovementSpeed 7.0f
-#define SprintSpeed 33.0f
+#define SprintSpeed 64.0f
 #define MipmapLevel 4

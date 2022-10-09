@@ -38,7 +38,7 @@ void	Camera::shutdown()
 
 glm::mat4	Camera::getProjection()
 {
-	return glm::perspective(_camera->_fov, (float)Window::width / (float)Window::height, 0.1f, 500.0f);
+	return glm::perspective(_camera->_fov, (float)Window::width / (float)Window::height, 0.1f, 4096.0f);
 }
 
 glm::mat4	Camera::getView()

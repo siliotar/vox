@@ -53,40 +53,17 @@ void	Renderer::drawMap(Map& map)
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	int	playerChunkX = static_cast<int>(Camera::getPlayerPosition().x) / CHUNK_X;
-	int	playerChunkY = static_cast<int>(Camera::getPlayerPosition().y) / CHUNK_Y;
-	int	playerChunkZ = static_cast<int>(Camera::getPlayerPosition().z) / CHUNK_Z;
 	_renderer->_va.bind();
 	_renderer->_ib.bind();
 	glm::mat4 mvp = Camera::getProjection() * Camera::getView();
 	_renderer->_voxelShader.bind();
 	_renderer->_voxelShader.setUniformMatrix4f(_renderer->_MVPUniformName, mvp);
 	_renderer->_voxelTextureAtlas.bind();
-	int distance2 = (RenderDistance + 1) * (RenderDistance + 1);
-	int maxX = playerChunkX + RenderDistance;
-	int maxY = playerChunkY + RenderDistance;
-	int maxZ = playerChunkZ + RenderDistance;
-	int startY = playerChunkY - RenderDistance;
-	if (startY < 0)
-		startY = 0;
-	if (maxY >= MaxChunkHeight)
-		maxY = MaxChunkHeight - 1;
-	for (int y = startY; y <= maxY; ++y)
-	{
-		for (int z = playerChunkZ - RenderDistance; z <= maxZ; ++z)
+
+	map.updateMap();
+	map.applyToAllChunks([=, &map](Chunk* chunk)
 		{
-			int distZ = playerChunkZ - z;
-			int distZ2 = distZ * distZ;
-			for (int x = playerChunkX - RenderDistance; x <= maxX; ++x)
-			{
-				int distX = playerChunkX - x;
-				int distX2 = distX * distX;
-				if (distX2 + distZ2 > distance2)
-					continue;
-				Chunk* tempChunk = map.getChunk(x, y, z);
-				tempChunk->calculateGreedyMesh(map);
-				tempChunk->draw(_renderer->_va, _renderer->_voxelvbLayout, _renderer->_voxelShader);
-			}
-		}
-	}
+			chunk->calculateGreedyMesh(map);
+			chunk->draw(_renderer->_va, _renderer->_voxelvbLayout, _renderer->_voxelShader);
+		});
 }

@@ -17,9 +17,9 @@ class Map;
 class Chunk
 {
 private:
-	int	_x;
-	int	_y;
-	int	_z;
+	const int	_x;
+	const int	_y;
+	const int	_z;
 	const std::string _chunkCoordUniformName = "chunkCoord";
 	int _chunkCoordUniformLocation;
 
@@ -43,4 +43,6 @@ public:
 	void calculateMesh(Map& map);
 	void calculateGreedyMesh(Map& map);
 	void draw(VertexArray& va, const VertexBufferLayout& vbLayout, Shader& shader);
+	glm::ivec3 getPosition() const;
+	void updateNeighbors();
 };

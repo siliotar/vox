@@ -2,11 +2,22 @@
 
 #include "Chunk.hpp"
 #include <map>
+#include <functional>
 
 class Map
 {
 private:
-	std::unordered_map<int, Chunk>	_map;
+	Chunk** _map;
+	Chunk** _tempBuffer;
+	uint32_t _dataSize;
+	int _size;
+
+	int middleX;
+	int middleY;
+	int middleZ;
+
+	void _loadMap();
+	void _loadNewChunk(int x, int y, int z, int playerChunkX, int playerChunkY, int playerChunkZ);
 public:
 	Map();
 	~Map();
@@ -14,6 +25,8 @@ public:
 	void operator=(const Map& other) = delete;
 
 	Chunk* getChunk(int x, int y, int z);
-	const Chunk* getChunk(int x, int y, int z) const;
 	void setBlock(int x, int y, int z, uint id);
+
+	void applyToAllChunks(std::function<void(Chunk*)> func);
+	void updateMap();
 };
