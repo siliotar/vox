@@ -39,6 +39,7 @@ public:
 	Block* blocks;
 	bool modified;
 	std::vector<Vertex> mesh;
+	bool isCulled;
 	Chunk(int startX, int startY, int startZ);
 	~Chunk();
 	Chunk() = delete;
@@ -48,5 +49,5 @@ public:
 	void draw(VertexArray& va, const VertexBufferLayout& vbLayout, Shader& shader);
 	glm::ivec3 getPosition() const;
 	void updateNeighbors();
-	bool isCulled(const Frustum& camFrustum) const;
+	void checkIsCulled(const Frustum& camFrustum);
 };

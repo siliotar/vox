@@ -11,7 +11,8 @@
 Chunk::Chunk(int startX, int startY, int startZ)
 	: _x(startX), _y(startY), _z(startZ), blocks(nullptr), modified(true), _vb(nullptr), _chunkCoordUniformLocation(-1),
 	_leftChunk(nullptr), _rightChunk(nullptr), _backChunk(nullptr), _frontChunk(nullptr), _upChunk(nullptr), _downChunk(nullptr),
-	_updateVB(true), _meshSize(0), _aabb({ startX, startY, startZ }, { startX + CHUNK_X, startY + CHUNK_Y, startZ + CHUNK_Z })
+	_updateVB(true), _meshSize(0), _aabb({ startX, startY, startZ }, { startX + CHUNK_X, startY + CHUNK_Y, startZ + CHUNK_Z }),
+	isCulled(false)
 {
 	blocks = new Block[CHUNK_X * CHUNK_Y * CHUNK_Z];
 
@@ -309,7 +310,7 @@ void Chunk::updateNeighbors()
 	modified = true;
 }
 
-bool Chunk::isCulled(const Frustum& camFrustum) const
+void Chunk::checkIsCulled(const Frustum& camFrustum)
 {
-	return !_aabb.isOnFrustum(camFrustum);
+	isCulled = !_aabb.isOnFrustum(camFrustum);
 }

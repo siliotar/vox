@@ -49,9 +49,15 @@ void	Renderer::shutdown()
 	_renderer = nullptr;
 }
 
-void calculateMesh(Chunk* chunk, Map* map)
+static void calculateMesh(Chunk* chunk, Map* map)
 {
 	chunk->calculateGreedyMesh(*map);
+}
+
+static void chechIsCulled(std::vector<Chunk*> order, Frustum* camFrustum)
+{
+	for (auto chunk : order)
+		chunk->checkIsCulled(*camFrustum);
 }
 
 void	Renderer::drawMap(Map& map)
@@ -67,19 +73,29 @@ void	Renderer::drawMap(Map& map)
 	_renderer->_voxelShader.setUniformMatrix4f(_renderer->_MVPUniformName, mvp);
 	_renderer->_voxelTextureAtlas.bind();
 
+	Frustum camFrustum = createFrustumFromCamera();
+	std::vector<Chunk*> orderToCheckCulling;
+	orderToCheckCulling.reserve(1024);
 	map.updateMap();
 	{
 		std::vector<std::future<void>> futures;
-		map.applyToAllChunks([&map, &futures](Chunk* chunk)
+		map.applyToAllChunks([&map, &futures, &orderToCheckCulling, &camFrustum](Chunk* chunk)
 			{
 				if (chunk->modified)
 					futures.push_back(std::async(std::launch::async, calculateMesh, chunk, &map));
+				orderToCheckCulling.push_back(chunk);
+				if (orderToCheckCulling.size() == 1024)
+				{
+					futures.push_back(std::async(std::launch::async, chechIsCulled, orderToCheckCulling, &camFrustum));
+					orderToCheckCulling.clear();
+				}
 			});
+		if (orderToCheckCulling.size() > 0)
+			chechIsCulled(orderToCheckCulling, &camFrustum);
 	}
-	Frustum camFrustum = createFrustumFromCamera();
 	map.applyToAllChunks([=](Chunk* chunk)
 		{
-			if (!chunk->isCulled(camFrustum))
+			if (!chunk->isCulled)
 				chunk->draw(_renderer->_va, _renderer->_voxelvbLayout, _renderer->_voxelShader);
 		});
 }
