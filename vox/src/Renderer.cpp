@@ -3,6 +3,7 @@
 #include "Window.hpp"
 #include "Camera.hpp"
 #include "Settings.hpp"
+#include <future>
 
 Renderer* Renderer::_renderer = nullptr;
 
@@ -47,6 +48,11 @@ void	Renderer::shutdown()
 	_renderer = nullptr;
 }
 
+void calculateMesh(Chunk* chunk, Map* map)
+{
+	chunk->calculateGreedyMesh(*map);
+}
+
 void	Renderer::drawMap(Map& map)
 {
 	glDrawBuffer(GL_COLOR_ATTACHMENT0);
@@ -61,9 +67,16 @@ void	Renderer::drawMap(Map& map)
 	_renderer->_voxelTextureAtlas.bind();
 
 	map.updateMap();
-	map.applyToAllChunks([=, &map](Chunk* chunk)
+	{
+		std::vector<std::future<void>> futures;
+		map.applyToAllChunks([&map, &futures](Chunk* chunk)
+			{
+				if (chunk->modified)
+					futures.push_back(std::async(std::launch::async, calculateMesh, chunk, &map));
+			});
+	}
+	map.applyToAllChunks([=](Chunk* chunk)
 		{
-			chunk->calculateGreedyMesh(map);
 			chunk->draw(_renderer->_va, _renderer->_voxelvbLayout, _renderer->_voxelShader);
 		});
 }

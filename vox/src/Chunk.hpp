@@ -31,6 +31,8 @@ private:
 	const Chunk* _downChunk;
 
 	VertexBuffer* _vb;
+	bool _updateVB;
+	size_t _meshSize;
 public:
 	Block* blocks;
 	bool modified;
@@ -40,7 +42,6 @@ public:
 	Chunk() = delete;
 	Chunk(Chunk& other) = delete;
 	void operator=(const Chunk& other) = delete;
-	void calculateMesh(Map& map);
 	void calculateGreedyMesh(Map& map);
 	void draw(VertexArray& va, const VertexBufferLayout& vbLayout, Shader& shader);
 	glm::ivec3 getPosition() const;
