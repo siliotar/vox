@@ -4,6 +4,7 @@
 #include "Camera.hpp"
 #include "Settings.hpp"
 #include <future>
+#include "Frustum.hpp"
 
 Renderer* Renderer::_renderer = nullptr;
 
@@ -75,8 +76,10 @@ void	Renderer::drawMap(Map& map)
 					futures.push_back(std::async(std::launch::async, calculateMesh, chunk, &map));
 			});
 	}
+	Frustum camFrustum = createFrustumFromCamera();
 	map.applyToAllChunks([=](Chunk* chunk)
 		{
-			chunk->draw(_renderer->_va, _renderer->_voxelvbLayout, _renderer->_voxelShader);
+			if (!chunk->isCulled(camFrustum))
+				chunk->draw(_renderer->_va, _renderer->_voxelvbLayout, _renderer->_voxelShader);
 		});
 }

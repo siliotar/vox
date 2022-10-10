@@ -2,9 +2,13 @@
 #include "Settings.hpp"
 
 Camera* Camera::_camera = nullptr;
+float Camera::fov = glm::radians(FOV);
+float Camera::aspect = (float)Window::width / (float)Window::height;
+float Camera::near = 0.1f;
+float Camera::far = 4096.0f;
 
 Camera::Camera()
-	: _position(0.5f, 25.0f, 0.5f), _fov(glm::radians(FOV)), _rotation(1.0f)
+	: _position(0.5f, 25.0f, 0.5f), _rotation(1.0f)
 {
 	_updateVectors();
 }
@@ -38,7 +42,8 @@ void	Camera::shutdown()
 
 glm::mat4	Camera::getProjection()
 {
-	return glm::perspective(_camera->_fov, (float)Window::width / (float)Window::height, 0.1f, 4096.0f);
+	Camera::aspect = (float)Window::width / (float)Window::height;
+	return glm::perspective(Camera::fov, Camera::aspect, Camera::near, Camera::far);
 }
 
 glm::mat4	Camera::getView()

@@ -11,6 +11,7 @@
 #include "VertexArray.hpp"
 #include "VertexBufferLayout.hpp"
 #include "Shader.hpp"
+#include "AABB.hpp"
 
 class Map;
 
@@ -33,6 +34,7 @@ private:
 	VertexBuffer* _vb;
 	bool _updateVB;
 	size_t _meshSize;
+	AABB _aabb;
 public:
 	Block* blocks;
 	bool modified;
@@ -46,4 +48,5 @@ public:
 	void draw(VertexArray& va, const VertexBufferLayout& vbLayout, Shader& shader);
 	glm::ivec3 getPosition() const;
 	void updateNeighbors();
+	bool isCulled(const Frustum& camFrustum) const;
 };

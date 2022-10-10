@@ -9,7 +9,6 @@ class Camera
 {
 private:
 	static Camera* _camera;
-	float	_fov;
 	glm::vec3	_position;
 	glm::vec3	_front;
 	glm::vec3	_right;
@@ -37,4 +36,13 @@ public:
 	static void			resetRotation();
 
 	static inline const glm::vec3&	getPlayerPosition() { return _camera->_position; }
+
+	static float		fov;
+	static float		aspect;
+	static float		near;
+	static float		far;
+
+	static inline const glm::vec3& getFront() { return _camera->_front; }
+	static inline const glm::vec3& getRight() { return _camera->_right; }
+	static inline const glm::vec3& getUp() { return _camera->_up; }
 };
