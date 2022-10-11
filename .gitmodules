@@ -10,3 +10,6 @@
 [submodule "vox/src/stb_image"]
 	path = vox/src/stb_image
 	url = https://github.com/siliotar/stb_image.git
+[submodule "vox/src/json"]
+	path = vox/src/json
+	url = https://github.com/siliotar/json.git
