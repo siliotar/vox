@@ -2,7 +2,7 @@
   "textures":
   {
     "bottom": "block/dirt",
-    "top":    "block/grass_block_top",
+    "top":    "block/azalea_top",
     "side":   "block/grass_block_side"
   },
   "faces":

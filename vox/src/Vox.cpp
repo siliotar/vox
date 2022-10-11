@@ -5,6 +5,7 @@
 #include "Renderer.hpp"
 #include "UI.hpp"
 #include "Settings.hpp"
+#include "BlocksInfo.hpp"
 
 #include <sstream>
 #include <iostream>
@@ -24,6 +25,7 @@ Vox::Vox(int screenWidth, int screenHeight)
 	fbSpec.Height = Window::height;
 	_fb = new FrameBuffer(fbSpec);
 
+	BlocksInfo::init();
 	Events::init();
 	Camera::init();
 	Renderer::init();
@@ -37,6 +39,7 @@ Vox::~Vox()
 	Camera::shutdown();
 	Window::terminate();
 	delete _fb;
+	BlocksInfo::shutdown();
 }
 
 void Vox::Run()

@@ -1,5 +1,5 @@
 {
-  "air": "block/debug",
+  "air": "block/air",
   "dirt": "block/dirt",
-  "grass_block": "block/azalea_top"
+  "grass_block": "block/grass_block"
 }
