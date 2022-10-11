@@ -4,7 +4,7 @@
 Camera* Camera::_camera = nullptr;
 float Camera::fov = glm::radians(FOV);
 float Camera::aspect = (float)Window::width / (float)Window::height;
-float Camera::near = 0.1f;
+float Camera::near = 0.01f;
 float Camera::far = 4096.0f;
 
 Camera::Camera()

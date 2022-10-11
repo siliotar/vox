@@ -4,7 +4,7 @@
 #include "VertexBuffer.hpp"
 #include "IndexBuffer.hpp"
 #include "VertexArray.hpp"
-#include "Texture.hpp"
+#include "TextureAtlas.hpp"
 #include "Map.hpp"
 
 class Renderer
@@ -15,7 +15,7 @@ private:
 	VertexBufferLayout _voxelvbLayout;
 	IndexBuffer _ib;
 	Shader _voxelShader;
-	Texture _voxelTextureAtlas;
+	TextureAtlas _voxelTextureAtlas;
 
 	const std::string _MVPUniformName = "MVP";
 

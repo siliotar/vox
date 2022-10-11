@@ -13,7 +13,10 @@ private:
 	int		_width;
 	int		_height;
 	int		_bpp;
+
+	void _setParametri();
 public:
+	Texture();
 	Texture(const std::string& path);
 	~Texture();
 
@@ -25,4 +28,8 @@ public:
 
 	inline int	getWidth() { return _width; }
 	inline int	getHeight() { return _height; }
+
+	void createEmptyTexture(int width, int height);
+	void setSubImage(int xOffset, int yOffset, int width, int height, unsigned char* data);
+	void generateMipmap();
 };

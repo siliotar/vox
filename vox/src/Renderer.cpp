@@ -12,7 +12,7 @@ Renderer::Renderer()
 	: _va(), _voxelvbLayout(),
 	_ib(nullptr, 6 * sizeof(GLuint), GL_STATIC_DRAW),
 	_voxelShader("res/shaders/Basic.vert", "res/shaders/Basic.frag"),
-	_voxelTextureAtlas("res/textures/atlas.png")
+	_voxelTextureAtlas()
 {
 	_voxelvbLayout.push<uint32_t>(2, 1);
 
