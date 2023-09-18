@@ -4,10 +4,54 @@
 #include <cmath>
 #include <iostream>
 #include <glm/gtc/noise.hpp>
-#include <PerlinNoise.hpp>
 #include "BlocksInfo.hpp"
+#include "NoiseMaps.hpp"
 
 #define BLOCK_COORD(x, y, z) x + z * CHUNK_X + y * CHUNK_X * CHUNK_Z
+
+//float Chunk::_get2DNoiseAt(int x, int y, size_t octaves)
+//{
+//	float value = 0.0f;
+//	float frequency = 1.0f / 192.0f;
+//	float amplitude = 1.0f;
+//	float accumulatedAmps = 0.0f;
+//
+//	for (size_t i = 0; i < octaves; ++i)
+//	{
+//		float tx = x * frequency;
+//		float ty = y * frequency;
+//
+//		float noise = perlinNoise(SEED, tx, ty);
+//		noise = (noise + 1.0f) / 2.0f;
+//		value += noise * amplitude;
+//		accumulatedAmps += amplitude;
+//
+//		frequency *= 2.0f;
+//		amplitude *= 0.55f;
+//	}
+//	return value / accumulatedAmps;
+//}
+//
+//float Chunk::_get3DNoiseAt(int x, int y, int z, float scale)
+//{
+//	float noise = perlinNoise(SEED, x * scale, y * scale, z * scale);
+//	return noise;
+//}
+
+static bool cheeseCave(float value)
+{
+	float threshold = 0.4f;
+	return value - threshold < -1.0f;
+}
+
+//bool Chunk::_spagettiCave(int x, int y, int z, float density)
+//{
+//	float scale = 1.0f / 64.0f;
+//	float noise = perlinNoise(SEED, SEED + x * scale, SEED + y * scale, SEED + z * scale);
+//	float threshold = 0.1f;
+//	density += noise;
+//	return density < -0.7f;
+//}
 
 Chunk::Chunk(int startX, int startY, int startZ)
 	: _x(startX), _y(startY), _z(startZ), blocks(nullptr), modified(true), _vb(nullptr), _chunkCoordUniformLocation(-1),
@@ -19,31 +63,33 @@ Chunk::Chunk(int startX, int startY, int startZ)
 
 	int start = -MaxChunkWidth * CHUNK_X;
 
-	int seed = 1337;
+	//int noise[CHUNK_X * CHUNK_Z];
 
-	int noise[CHUNK_X * CHUNK_Z];
-	int worldStartX = start + _x;
-	int worldStartZ = start + _z;
-	float scale = 1.0f / 128.0f;
+	//for (int tz = 0; tz < CHUNK_Z; ++tz)
+	//	for (int tx = 0; tx < CHUNK_X; ++tx)
+	//		noise[tx + tz * CHUNK_X] = static_cast<int>(_get2DNoiseAt(_x + tx, _z + tz, 6) * 100.0f);
 
-	for (int tz = 0; tz < CHUNK_Z; ++tz)
-		for (int tx = 0; tx < CHUNK_X; ++tx)
-			noise[tx + tz * CHUNK_X] = static_cast<int>(perlinNoise(seed, float(worldStartX + tx) * scale, float(worldStartZ + tz) * scale) * 64.0f) + 64;
+	int heightOffset = 128;
 
-	for (int ty = 0; ty < CHUNK_Y; ++ty)
+	for (int tz = 0; tz < CHUNK_Z; tz++)
 	{
-		int y = _y + ty;
-		for (int tz = 0; tz < CHUNK_Z; tz++)
+		for (int tx = 0; tx < CHUNK_X; tx++)
 		{
-			for (int tx = 0; tx < CHUNK_X; tx++)
+			//const NoiseMapCell& cell = NoiseMap::getNoisesAt(_x + tx, _z + tz);
+			float offset = NoiseMap::getHeightOffset(_x + tx, _z + tz);
+			int height = heightOffset + (int)(offset * 64.0f);
+			//float factor = NoiseMap::getSquashingFactor(_x + tx, _z + tz);
+			for (int ty = 0; ty < CHUNK_Y; ++ty)
 			{
-				int value = noise[tx + tz * CHUNK_X];
-				if (y > value)
-					blocks[BLOCK_COORD(tx, ty, tz)].ID = 0;
-				else if (y + 1 > value)
-					blocks[BLOCK_COORD(tx, ty, tz)].ID = 2;
+				int y = _y + ty;
+
+				//float value = _get3DNoiseAt(_x + tx, y, _z + tz, 1 / 64.0f);
+				//float terrain = value - (y - height) / 10.0f * factor;
+				//if (terrain >= 0)
+				if (y < height)
+					blocks[BLOCK_COORD(tx, ty, tz)].ID = 3;
 				else
-					blocks[BLOCK_COORD(tx, ty, tz)].ID = 1;
+					blocks[BLOCK_COORD(tx, ty, tz)].ID = 0;
 			}
 		}
 	}
@@ -87,10 +133,10 @@ void Chunk::calculateGreedyMesh(Map& map)
 			{
 				if (blocks[BLOCK_COORD(x, y, z)].ID == 0)
 					continue;
-				if (y == 0 && (_downChunk && _downChunk->blocks[BLOCK_COORD(x, (CHUNK_Y - 1), z)].ID == 0) \
+				if (y == 0 && (_y == 0 || (_downChunk && _downChunk->blocks[BLOCK_COORD(x, (CHUNK_Y - 1), z)].ID == 0)) \
 					|| (y != 0 && blocks[BLOCK_COORD(x, (y - 1), z)].ID == 0))
 					faces[x][y][z] |= downMask;
-				if (y == (CHUNK_Y - 1) && (_upChunk && _upChunk->blocks[BLOCK_COORD(x, 0, z)].ID == 0) \
+				if (y == (CHUNK_Y - 1) && (_y == MaxChunkHeight * CHUNK_Y - 16 || (_upChunk && _upChunk->blocks[BLOCK_COORD(x, 0, z)].ID == 0)) \
 					|| (y != (CHUNK_Y - 1) && blocks[BLOCK_COORD(x, (y + 1), z)].ID == 0))
 					faces[x][y][z] |= upMask;
 				if ((z == 0 && (_frontChunk && _frontChunk->blocks[BLOCK_COORD(x, y, (CHUNK_Z - 1))].ID == 0)) \

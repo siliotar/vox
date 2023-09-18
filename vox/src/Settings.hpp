@@ -1,5 +1,11 @@
 #pragma once
 
+#define CHUNK_X 16
+#define CHUNK_Y 16
+#define CHUNK_Z 16
+
+#define SEED 1
+
 #define TextureAtlasX 16
 #define TextureAtlasY 16
 #define TextureSize 32.0f / 512.0f

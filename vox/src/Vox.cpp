@@ -6,6 +6,7 @@
 #include "UI.hpp"
 #include "Settings.hpp"
 #include "BlocksInfo.hpp"
+#include "NoiseMaps.hpp"
 
 #include <sstream>
 #include <iostream>
@@ -29,12 +30,14 @@ Vox::Vox(int screenWidth, int screenHeight)
 	Events::init();
 	Camera::init();
 	Renderer::init();
+	NoiseMap::init();
 	UI::init();
 }
 
 Vox::~Vox()
 {
 	UI::terminate();
+	NoiseMap::terminate();
 	Renderer::shutdown();
 	Camera::shutdown();
 	Window::terminate();

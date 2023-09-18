@@ -1,5 +1,3 @@
-#include "PerlinNoise.hpp"
-
 template <typename T>
 struct Lookup
 {
@@ -120,7 +118,7 @@ float GradCoord(int seed, int xPrimed, int yPrimed, int zPrimed, float xd, float
     return xd * xg + yd * yg + zd * zg;
 }
 
-float perlinNoise(int seed, float x, float y)
+float perlinNoiseOld(int seed, float x, float y)
 {
 	int x0 = x >= 0 ? (int)x : (int)x - 1;
 	int y0 = y >= 0 ? (int)y : (int)y - 1;
@@ -144,7 +142,7 @@ float perlinNoise(int seed, float x, float y)
 	return Lerp(xf0, xf1, ys) * 1.4247691104677813f;
 }
 
-float perlinNoise(int seed, float x, float y, float z)
+float perlinNoiseOld(int seed, float x, float y, float z)
 {
     int x0 = x >= 0 ? (int)x : (int)x - 1;
     int y0 = y >= 0 ? (int)y : (int)y - 1;

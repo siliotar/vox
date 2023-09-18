@@ -1,5 +1,6 @@
 {
   "air": "block/air",
-  "dirt": "block/dirt",
-  "grass_block": "block/grass_block"
+  "stone": "block/stone",
+  "grass_block": "block/grass_block",
+  "dirt": "block/dirt"
 }

@@ -1,6 +1,7 @@
 #include "Map.hpp"
 #include "Camera.hpp"
 #include "Settings.hpp"
+#include "NoiseMaps.hpp"
 
 int calculateMapSize()
 {
@@ -83,7 +84,12 @@ Map::Map()
 }
 
 Map::~Map()
-{}
+{
+	for (size_t i = 0; i < _size * _size; ++i)
+		delete _map[i];
+	delete[] _map;
+	delete[] _tempBuffer;
+}
 
 Chunk* Map::getChunk(int x, int y, int z)
 {
@@ -209,6 +215,8 @@ void Map::updateMap()
 	int dx = playerChunkX - middleX;
 	int dy = playerChunkY - middleY;
 	int dz = playerChunkZ - middleZ;
+
+	NoiseMap::shift(dx, dz);
 
 	if (dx > _size || dx < -_size || \
 		dy > _size || dy < -_size || \

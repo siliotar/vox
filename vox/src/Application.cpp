@@ -2,7 +2,7 @@
 
 int main(void)
 {
-	Vox vox(1366, 768);
+	Vox vox(1920, 1080);
 	vox.Run();
 
 	return EXIT_SUCCESS;

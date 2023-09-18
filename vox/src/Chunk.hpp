@@ -1,9 +1,5 @@
 #pragma once
 
-#define CHUNK_X 16
-#define CHUNK_Y 16
-#define CHUNK_Z 16
-
 #include "Block.hpp"
 #include "Vertex.hpp"
 #include <vector>
@@ -35,6 +31,11 @@ private:
 	bool _updateVB;
 	size_t _meshSize;
 	AABB _aabb;
+
+	float _get2DNoiseAt(int x, int y, size_t octaves);
+	float _get3DNoiseAt(int x, int y, int z, float scale);
+
+	bool _spagettiCave(int x, int y, int z, float density);
 public:
 	Block* blocks;
 	bool modified;
