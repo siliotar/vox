@@ -15,7 +15,7 @@ float lerp3(float a, float b, float c, float d, float e, float f, float g, float
 	return lerp(c, lerp2(a, b, d, e, f, g), lerp2(a, b, h, i, j, k));
 }
 
-float smoothStep(float x)
+double smoothStep(double x)
 {
 	return x * x * x * (x * (x * 6 - 15) + 10);
 }

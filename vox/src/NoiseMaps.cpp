@@ -112,7 +112,7 @@ NoiseMap::NoiseMap() :
 	int startX = (static_cast<int>(playerPos.x) / CHUNK_X - RenderDistance) * CHUNK_X;
 	int startZ = (static_cast<int>(playerPos.z) / CHUNK_Z - RenderDistance) * CHUNK_Z;
 
-	Xoroshiro random = Xoroshiro(SEED).fork();
+	const Xoroshiro random = Xoroshiro(SEED).fork();
 	_temperature = new NormalNoise(random.forkWithHashOf("minecraft:temperature"), -10, temperatureAmplitudes);
 	_humidity = new NormalNoise(random.forkWithHashOf("minecraft:vegetation"), -8, humidityAmplitudes);
 	_continentalness = new NormalNoise(random.forkWithHashOf("minecraft:continentalness"), -9, continentalnessAmplitudes);
@@ -122,16 +122,18 @@ NoiseMap::NoiseMap() :
 
 	for (int z = 0; z < maxZ; ++z)
 	{
-		int tz = startZ + z;
+		float tz = startZ + z;
+		tz /= 4.0f;
 		for (int x = 0; x < maxX; ++x)
 		{
-			int tx = startX + x;
+			float tx = startX + x;
+			tx /= 4.0f;
 			float xx = tx + _shift->sample(tx, 0, tz) * 4;
 			float zz = tz + _shift->sample(tz, tx, 0) * 4;
 
 			NoiseMapCell cell;
 			cell.C = _continentalness->sample(xx, 0, zz);
-			cell.E = _erosion->sample(xx, 0, zz);
+			cell.E = _erosion->sample(xx, 0, z);
 			cell.PV = _weirdness->sample(xx, 0, zz);
 			_map[x + z * maxX] = cell;
 		}
@@ -162,11 +164,15 @@ void NoiseMap::shift(int xOffset, int zOffset)
 		for (int x = 0; x < maxX; ++x)
 		{
 			int oldX = x + xOffset;
+			float zz = startZ + z;
+			zz /= 4.0f;
 			if (oldX >= maxX || oldX < 0 || oldZ >= maxZ || oldZ < 0)
 			{
 				NoiseMapCell cell;
-				int xx = startX + x;
-				int zz = startZ + z;
+				float xx = startX + x;
+				xx /= 4.0f;
+				xx = xx + _noiseMap->_shift->sample(xx, 0, zz) * 4;
+				zz = zz + _noiseMap->_shift->sample(zz, xx, 0) * 4;
 				cell.C = _noiseMap->_continentalness->sample(xx, 0, zz);
 				cell.E = _noiseMap->_erosion->sample(xx, 0, zz);
 				cell.PV = _noiseMap->_weirdness->sample(xx, 0, zz);

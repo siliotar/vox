@@ -25,5 +25,5 @@ public:
 	double nextDouble();
 
 	Xoroshiro fork();
-	Xoroshiro forkWithHashOf(const std::string& name);
+	Xoroshiro forkWithHashOf(const std::string& name) const;
 };

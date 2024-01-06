@@ -32,10 +32,7 @@ private:
 	size_t _meshSize;
 	AABB _aabb;
 
-	float _get2DNoiseAt(int x, int y, size_t octaves);
-	float _get3DNoiseAt(int x, int y, int z, float scale);
-
-	bool _spagettiCave(int x, int y, int z, float density);
+	void _generate();
 public:
 	Block* blocks;
 	bool modified;

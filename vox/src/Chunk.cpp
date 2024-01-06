@@ -9,49 +9,11 @@
 
 #define BLOCK_COORD(x, y, z) x + z * CHUNK_X + y * CHUNK_X * CHUNK_Z
 
-//float Chunk::_get2DNoiseAt(int x, int y, size_t octaves)
-//{
-//	float value = 0.0f;
-//	float frequency = 1.0f / 192.0f;
-//	float amplitude = 1.0f;
-//	float accumulatedAmps = 0.0f;
-//
-//	for (size_t i = 0; i < octaves; ++i)
-//	{
-//		float tx = x * frequency;
-//		float ty = y * frequency;
-//
-//		float noise = perlinNoise(SEED, tx, ty);
-//		noise = (noise + 1.0f) / 2.0f;
-//		value += noise * amplitude;
-//		accumulatedAmps += amplitude;
-//
-//		frequency *= 2.0f;
-//		amplitude *= 0.55f;
-//	}
-//	return value / accumulatedAmps;
-//}
-//
-//float Chunk::_get3DNoiseAt(int x, int y, int z, float scale)
-//{
-//	float noise = perlinNoise(SEED, x * scale, y * scale, z * scale);
-//	return noise;
-//}
-
 static bool cheeseCave(float value)
 {
 	float threshold = 0.4f;
 	return value - threshold < -1.0f;
 }
-
-//bool Chunk::_spagettiCave(int x, int y, int z, float density)
-//{
-//	float scale = 1.0f / 64.0f;
-//	float noise = perlinNoise(SEED, SEED + x * scale, SEED + y * scale, SEED + z * scale);
-//	float threshold = 0.1f;
-//	density += noise;
-//	return density < -0.7f;
-//}
 
 Chunk::Chunk(int startX, int startY, int startZ)
 	: _x(startX), _y(startY), _z(startZ), blocks(nullptr), modified(true), _vb(nullptr), _chunkCoordUniformLocation(-1),
@@ -61,14 +23,17 @@ Chunk::Chunk(int startX, int startY, int startZ)
 {
 	blocks = new Block[CHUNK_X * CHUNK_Y * CHUNK_Z];
 
-	int start = -MaxChunkWidth * CHUNK_X;
+	_generate();
+}
 
-	//int noise[CHUNK_X * CHUNK_Z];
+Chunk::~Chunk()
+{
+	delete[] blocks;
+	delete _vb;
+}
 
-	//for (int tz = 0; tz < CHUNK_Z; ++tz)
-	//	for (int tx = 0; tx < CHUNK_X; ++tx)
-	//		noise[tx + tz * CHUNK_X] = static_cast<int>(_get2DNoiseAt(_x + tx, _z + tz, 6) * 100.0f);
-
+void Chunk::_generate()
+{
 	int heightOffset = 128;
 
 	for (int tz = 0; tz < CHUNK_Z; tz++)
@@ -77,7 +42,7 @@ Chunk::Chunk(int startX, int startY, int startZ)
 		{
 			//const NoiseMapCell& cell = NoiseMap::getNoisesAt(_x + tx, _z + tz);
 			float offset = NoiseMap::getHeightOffset(_x + tx, _z + tz);
-			int height = heightOffset + (int)(offset * 64.0f);
+			int height = heightOffset + (int)(offset * 128.0f);
 			//float factor = NoiseMap::getSquashingFactor(_x + tx, _z + tz);
 			for (int ty = 0; ty < CHUNK_Y; ++ty)
 			{
@@ -87,18 +52,19 @@ Chunk::Chunk(int startX, int startY, int startZ)
 				//float terrain = value - (y - height) / 10.0f * factor;
 				//if (terrain >= 0)
 				if (y < height)
-					blocks[BLOCK_COORD(tx, ty, tz)].ID = 3;
+				{
+					if (y + 1 == height)
+						blocks[BLOCK_COORD(tx, ty, tz)].ID = 2;
+					else if (y + 5 > height)
+						blocks[BLOCK_COORD(tx, ty, tz)].ID = 1;
+					else
+						blocks[BLOCK_COORD(tx, ty, tz)].ID = 3;
+				}
 				else
 					blocks[BLOCK_COORD(tx, ty, tz)].ID = 0;
 			}
 		}
 	}
-}
-
-Chunk::~Chunk()
-{
-	delete[] blocks;
-	delete _vb;
 }
 
 void Chunk::calculateGreedyMesh(Map& map)

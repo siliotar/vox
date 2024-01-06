@@ -3,5 +3,5 @@
 class SimplexNoise
 {
 public:
-	static float gradDot(int a, float b, float c, float d);
+	static double gradDot(int a, double b, double c, double d);
 };

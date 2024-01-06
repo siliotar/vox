@@ -123,7 +123,10 @@ void Vox::Run()
 				Window::displayCursor();
 			else
 				Window::hideCursor();
-			std::cout << Camera::getPlayerPosition().x << ", " << Camera::getPlayerPosition().y << ", " << Camera::getPlayerPosition().z << std::endl;
+			float playerPosX = Camera::getPlayerPosition().x;
+			float playerPosZ = Camera::getPlayerPosition().z;
+			std::cout << playerPosX << ", " << Camera::getPlayerPosition().y << ", " << playerPosZ << std::endl;
+			std::cout << NoiseMap::getNoisesAt(playerPosX, playerPosZ).C << std::endl;
 		}
 
 		if (Events::_cursor_locked)

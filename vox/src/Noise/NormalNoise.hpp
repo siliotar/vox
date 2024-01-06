@@ -8,7 +8,6 @@ private:
 	float _valueFactor;
 	PerlinNoise _first;
 	PerlinNoise _second;
-	float _maxValue;
 
 public:
 	NormalNoise(Xoroshiro& random, int firstOctave, const std::vector<float>& amplitudes);

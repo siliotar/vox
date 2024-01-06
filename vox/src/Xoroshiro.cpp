@@ -123,7 +123,7 @@ Xoroshiro Xoroshiro::fork()
 	return { _next(), _next() };
 }
 
-Xoroshiro Xoroshiro::forkWithHashOf(const std::string& name)
+Xoroshiro Xoroshiro::forkWithHashOf(const std::string& name) const
 {
 	std::vector<unsigned char> hash = md5AsBytes(name);
 

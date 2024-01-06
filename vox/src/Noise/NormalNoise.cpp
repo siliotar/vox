@@ -20,7 +20,6 @@ NormalNoise::NormalNoise(Xoroshiro& random, int firstOctave, const std::vector<f
 
 	float expectedDeviation = 0.1f * (1 + 1 / (max - min + 1));
 	_valueFactor = (1.0f / 6) / expectedDeviation;
-	_maxValue = (_first.maxValue + _second.maxValue) * _valueFactor;
 }
 
 NormalNoise::~NormalNoise()
@@ -31,5 +30,7 @@ float NormalNoise::sample(float x, float y, float z)
 	float x2 = x * INPUT_FACTOR;
 	float y2 = y * INPUT_FACTOR;
 	float z2 = z * INPUT_FACTOR;
-	return (_first.sample(x, y, z) + _second.sample(x2, y2, z2)) * _valueFactor;
+	float p1 = _first.sample(x, y, z);
+	float p2 = _second.sample(x2, y2, z2);
+	return (p1 + p2) * _valueFactor;
 }

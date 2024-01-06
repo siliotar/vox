@@ -1,9 +1,9 @@
 #include "PerlinNoise.hpp"
 
-PerlinNoise::PerlinNoise(Xoroshiro random, int firstOctave, const std::vector<float> amplitudes)
+PerlinNoise::PerlinNoise(Xoroshiro& random, int firstOctave, const std::vector<float> amplitudes)
 	: _amplitudes(amplitudes)
 {
-	Xoroshiro forked = random.fork();
+	const Xoroshiro forked = random.fork();
 
 	size_t size = _amplitudes.size();
 	_noiseLevels.resize(size);
@@ -14,6 +14,8 @@ PerlinNoise::PerlinNoise(Xoroshiro random, int firstOctave, const std::vector<fl
 			int octave = firstOctave + i;
 			_noiseLevels[i] = new ImprovedNoise(forked.forkWithHashOf("octave_" + std::to_string(octave)));
 		}
+		else
+			_noiseLevels[i] = 0;
 	}
 
 	_lowestFreqInputFactor = powf(2, firstOctave);

@@ -16,7 +16,7 @@ private:
 public:
 	float maxValue;
 
-	PerlinNoise(Xoroshiro random, int firstOctave, const std::vector<float> amplitudes);
+	PerlinNoise(Xoroshiro& random, int firstOctave, const std::vector<float> amplitudes);
 	~PerlinNoise();
 
 	float sample(float x, float y, float z);
